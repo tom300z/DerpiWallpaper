@@ -27,10 +27,16 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
 
-      - name: Install Dependencies and activate venv
+      - name: Install Dependencies
         run: |
           poetry install --with dev
-          source .venv/bin/activate
+
+      - name: Activate venv on Windows
+        if: matrix.os == 'windows-latest'
+        run: source .venv/bin/activate
+      - name: Activate venv on Linux/macOS
+        if: matrix.os != 'windows-latest'
+        run: .venv\Scripts\activate.ps1
 
       - name: Get Version from Poetry
         id: get_version

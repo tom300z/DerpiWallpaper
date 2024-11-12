@@ -1,5 +1,5 @@
 .venv
-*build*
+*build
 *dist*
 *.exe
 __pycache__

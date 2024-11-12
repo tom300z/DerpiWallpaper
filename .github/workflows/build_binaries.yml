@@ -32,8 +32,26 @@ jobs:
           poetry install --with dev
           source .venv/bin/activate
 
-      - name: Build Executable
-        run: nuitka .\derpiwallpaper\__main__.py --msvc=latest --onefile --enable-plugin=pyside6 --windows-console-mode=disable --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" --product-name=DerpiWallpaper --product-version=$((poetry version).split()[1]) --output-filename="DerpiWallpaper.exe" --windows-icon-from-ico="data\derpibooru.ico" --include-data-files="data/*=data/"
+      - name: Get Version from Poetry
+        id: get_version
+        run: echo "version=$(poetry version -s)" >> $GITHUB_ENV
+
+      - name: Build Executable with Nuitka
+        uses: Nuitka/Nuitka-Action@main
+        with:
+          nuitka-version: main
+          script-name: derpiwallpaper/__main__.py
+          onefile: true
+          output-filename: DerpiWallpaper  # Base name for the output file
+          output-dir: build                # Specify output directory
+          extra-options: |
+            --enable-plugin=pyside6
+            --windows-console-mode=disable
+            --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}"
+            --product-name=DerpiWallpaper
+            --product-version=${{ env.version }}
+            --windows-icon-from-ico="data/derpibooru.ico"
+            --include-data-files="data/*=data/"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

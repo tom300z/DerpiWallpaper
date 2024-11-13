@@ -29,13 +29,14 @@ jobs:
           which python
           python -m pip install pipx
           python -m pipx install poetry
+          poetry config virtualenvs.create false
           which poetry
 
 
       - name: Restore cached virtualenv
         uses: actions/cache/restore@v4
         with:
-          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}--${{ hashFiles('poetry.lock') }}
           path: .venv
 
       - name: Install Dependencies
@@ -47,7 +48,7 @@ jobs:
       - name: Saved cached virtualenv
         uses: actions/cache/save@v4
         with:
-          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('poetry.lock') }}
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}--${{ hashFiles('poetry.lock') }}
           path: .venv
 
       - name: Get Version from Poetry
@@ -62,7 +63,7 @@ jobs:
           onefile: true
           output-filename: DerpiWallpaper  # Base name for the output file
           output-dir: build                # Specify output directory
-          enable-plugin: pyside6
+          enable-plugins: pyside6
           windows-console-mode: disable
           onefile-tempdir-spec: "{CACHE_DIR}/{PRODUCT}/{VERSION}"
           product-name: DerpiWallpaper

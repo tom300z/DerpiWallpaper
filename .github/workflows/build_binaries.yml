@@ -15,9 +15,12 @@ jobs:
       - name: Activate venv on Windows
         if: matrix.os == 'windows-latest'
         run: |
-          echo ".venv\Scripts" | Out-File -FilePath $Env:GITHUB_PATH -Encoding utf-8 -Append
+          $env:PATH = ".venv/" + 'Scripts' + ';' + $env:PATH
+      - name: Activate venv on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
           echo $Env:PATH
-          echo $Env:GITHUB_PATH
+          echo $Env:GITHUB_ENV
       - name: Check-out repository
         uses: actions/checkout@v4
 

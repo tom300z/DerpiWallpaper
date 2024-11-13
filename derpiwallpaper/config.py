@@ -6,15 +6,20 @@ from configobj import ConfigObj
 
 class DerpiWallpaperConfig:
     # Default configuration settings as class attributes
+    derpibooru_json_api_key = ""  # Defaults to public api
     derpibooru_json_api_url = "https://derpibooru.org/api/v1/json/"
     search_string: str = "wallpaper,score.gt:200,safe,-anthro,-comic,-human"
     enable_auto_refresh: bool = False
     minimize_to_tray: bool = True
     auto_refresh_interval_seconds: int = 360
 
+    @property
+    def appdir(self) -> str:
+        return user_config_dir(appname="DerpiWallpaper", appauthor=False)
+
     def __init__(self):
         # Define the config path using appdirs
-        config_dir = Path(user_config_dir(appname="DerpiWallpaper", appauthor=False))
+        config_dir = Path(self.appdir)
         config_dir.mkdir(parents=True, exist_ok=True)
         self.config_path = config_dir / "config.ini"
 

@@ -50,14 +50,13 @@ jobs:
           onefile: true
           output-filename: DerpiWallpaper  # Base name for the output file
           output-dir: build                # Specify output directory
-          extra-options: |
-            --enable-plugin=pyside6
-            --windows-console-mode=disable
-            --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}"
-            --product-name=DerpiWallpaper
-            --product-version=${{ env.version }}
-            --windows-icon-from-ico="data/derpibooru.ico"
-            --include-data-files="data/*=data/"
+          enable-plugin: pyside6
+          windows-console-mode: disable
+          onefile-tempdir-spec: "{CACHE_DIR}/{PRODUCT}/{VERSION}"
+          product-name: DerpiWallpaper
+          product-version: ${{ env.version }}
+          windows-icon-from-ico: "data/derpibooru.ico"
+          include-data-files: "data/*: data/"
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

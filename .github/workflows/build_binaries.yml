@@ -77,14 +77,15 @@ jobs:
           nuitka-version: main
           script-name: derpiwallpaper/__main__.py
           onefile: true
-          output-filename: DerpiWallpaper  # Base name for the output file
           output-dir: build                # Specify output directory
           enable-plugins: pyside6
           windows-console-mode: disable
           onefile-tempdir-spec: "{CACHE_DIR}/{PRODUCT}/{VERSION}"
           product-name: DerpiWallpaper
           product-version: ${{ env.version }}
-          windows-icon-from-ico: "data/derpibooru.ico"
+          windows-icon-from-ico: "data/derpiwallpaper.ico"
+          linux-icon: "data/derpiwallpaper.png"
+          macos-app-icon: "data/derpiwallpaper.png"
           include-data-files: "data/*=data/"
 
       - name: Upload Artifacts

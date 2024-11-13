@@ -48,11 +48,6 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: |
           echo ".venv\Scripts" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      - name: Activate venv on Windows
-        if: matrix.os == 'windows-latest'
-        run: |
-          echo $Env:PATH
-          dir ".venv\Scripts"
       - name: Activate venv on Linux/macOS
         if: matrix.os != 'windows-latest'
         run: echo ".venv/bin" >> $GITHUB_PATH
@@ -66,7 +61,7 @@ jobs:
 
       - name: Get Version from Poetry
         id: get_version
-        run: echo "version=$(poetry version -s)" >> $GITHUB_ENV
+        run: echo "version=$(poetry version -s)" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: show py
         run: |

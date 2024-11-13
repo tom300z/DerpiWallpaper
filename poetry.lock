@@ -273,22 +273,18 @@ test = ["fsspec[github]", "pytest", "pytest-cov"]
 tifffile = ["tifffile"]
 
 [[package]]
-name = "Nuitka"
-version = "2.5rc13"
+name = "nuitka"
+version = "2.4.11"
 description = "Python compiler with full language support and CPython compatibility"
 optional = false
 python-versions = "*"
 files = [
-    {file = "develop.zip", hash = "sha256:c3d43cf97739a286a191a45070a7d679346182f1a30bcce9f6a4c9c6882f42fe"},
+    {file = "Nuitka-2.4.11.tar.gz", hash = "sha256:f2499361b09727cd2e96307106ed88d67cef09d527ff1857bfec8c2d1c9ff38a"},
 ]
 
 [package.dependencies]
 ordered-set = ">=4.1.0"
 zstandard = ">=0.15"
-
-[package.source]
-type = "url"
-url = "https://github.com/Nuitka/Nuitka/archive/develop.zip"
 
 [[package]]
 name = "numpy"
@@ -725,4 +721,4 @@ cffi = ["cffi (>=1.11)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.10,<3.14"
-content-hash = "c85151095f19c8d9aa6c78b72c70ddaebbb4373931f7eefb40ae705df9bc2dc7"
+content-hash = "0a1c91c6474ad9e244b441eb1f6c271bc329c684bbaec9e9451142cd7ac67bec"

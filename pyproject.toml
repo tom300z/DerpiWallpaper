@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "derpiwallpaper"
-version = "0.4.0"
+version = "0.4.1"
 description = "Small utility that sets the windows desktop wallpaper to a random derpibooru image matching a query string."
 authors = ["tom300z"]
 license = "BSD"
@@ -16,8 +16,8 @@ winshell = { version = "^0.6", platform  = "win32" }
 pywin32 = { version = "^308", platform  = "win32" }
 
 [tool.poetry.group.dev.dependencies]
-nuitka = {url = "https://github.com/Nuitka/Nuitka/archive/develop.zip"}
 imageio = "^2.36.0"
+nuitka = "^2.4.11"
 
 [build-system]
 requires = ["poetry-core"]

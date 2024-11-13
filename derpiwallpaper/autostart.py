@@ -20,7 +20,7 @@ def run_on_startup(enable=True):
             import winshell  # Requires `winshell` for creating Windows shortcuts
             with winshell.shortcut(str(shortcut_path)) as shortcut:  # type: ignore
                 shortcut.path = str(executable_path)
-                shortcut.arguments = minimized_flag  # Add the --minimized flag
+                shortcut.arguments = minimized_flag
         else:
             if shortcut_path.exists():
                 shortcut_path.unlink()
@@ -41,7 +41,7 @@ def run_on_startup(enable=True):
                 <key>ProgramArguments</key>
                 <array>
                     <string>{str(executable_path)}</string>
-                    <string>{minimized_flag}</string>  # Add the --minimized flag
+                    <string>{minimized_flag}</string>
                 </array>
                 <key>RunAtLoad</key>
                 <true/>
@@ -65,7 +65,7 @@ def run_on_startup(enable=True):
             desktop_entry_content = f"""
             [Desktop Entry]
             Type=Application
-            Exec={str(executable_path)} {minimized_flag}  # Add the --minimized flag
+            Exec="{str(executable_path)}" {minimized_flag}
             Hidden=false
             NoDisplay=false
             X-GNOME-Autostart-enabled=true

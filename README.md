@@ -1,7 +1,7 @@
 # DerpiWallpaper
 <img src="data/derpiwallpaper.ico" alt="app icon" width="100"/>
 
-A tiny Qt application to your wallpaper to a random derpibooru image that matches a search string.
+A tiny Qt application to your wallpaper to a random derpibooru.org image matching a search string.
 
 Features:
 - No installation required

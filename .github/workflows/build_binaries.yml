@@ -33,10 +33,10 @@ jobs:
 
       - name: Activate venv on Windows
         if: matrix.os == 'windows-latest'
-        run: source .venv/bin/activate
+        run: .venv\Scripts\activate.ps1
       - name: Activate venv on Linux/macOS
         if: matrix.os != 'windows-latest'
-        run: .venv\Scripts\activate.ps1
+        run: source .venv/bin/activate
 
       - name: Get Version from Poetry
         id: get_version

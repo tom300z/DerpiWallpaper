@@ -8,17 +8,17 @@ from PySide6.QtWidgets import QGridLayout, QLabel, QLineEdit, QProgressBar, QPus
 
 from derpiwallpaper.autostart import is_run_on_startup, run_on_startup
 from derpiwallpaper.config import CONFIG
-from derpiwallpaper.wallpapermanager import WallpaperManager
+from derpiwallpaper.workers import WorkerManager
 
 ICON_PATH = Path(__file__).parent.parent / "data" / "derpiwallpaper.ico"
 
 
 class DerpiWallpaperUI(QWidget):
-    wpman: WallpaperManager
+    workers: WorkerManager
     tray_icon: QSystemTrayIcon | None = None
-    def __init__(self, wallpaper_manager: WallpaperManager) -> None:
+    def __init__(self, workers: WorkerManager) -> None:
         super().__init__()
-        self.wpman = wallpaper_manager
+        self.workers = workers
         self.icon = QIcon(str(ICON_PATH))
 
         layout = QGridLayout(self)
@@ -46,11 +46,15 @@ class DerpiWallpaperUI(QWidget):
             tray_menu = QMenu()
             restore_action = QAction("Restore", self)
             restore_action.triggered.connect(self.show_and_raise)
+            refresh_action = QAction("Refresh wallpaper", self)
+            refresh_action.triggered.connect(self.update_wp)
+
 
             exit_action = QAction("Exit", self)
             exit_action.triggered.connect(QApplication.instance().quit) # type: ignore
 
             tray_menu.addAction(restore_action)
+            tray_menu.addAction(refresh_action)
             tray_menu.addAction(exit_action)
 
             self.tray_icon.setContextMenu(tray_menu)
@@ -92,6 +96,17 @@ class DerpiWallpaperUI(QWidget):
         search_input.setToolTip("derpibooru.org search string")
         search_input.textChanged.connect(lambda search_string: setattr(CONFIG, "search_string", search_string))
 
+        search_results = QLabel("0 images match your search.")
+        def update_results_label():
+            if not self.workers.search.current_error_msg:
+                style = ""
+                results_text = f"{self.workers.search.current_result_count} images match your search."
+            else:
+                style = "color: red"
+                results_text = f"Invalid search string: {self.workers.search.current_error_msg}"
+            search_results.setText(results_text)
+            search_results.setStyleSheet(style)
+        self.workers.search.update_ui.connect(update_results_label)
         search_description = QLabel("See <a href=\"https://derpibooru.org/pages/search_syntax\">Search Syntax</a> for instructions on how to build your search string.")
         search_description.setOpenExternalLinks(True)
 
@@ -100,11 +115,12 @@ class DerpiWallpaperUI(QWidget):
         layout = QGridLayout(widget)
         layout.addWidget(search_label, 0, 0, 1, 1)
         layout.addWidget(search_input, 1, 0, 1, 1)
-        layout.addWidget(search_description, 2, 0, 1, 1)
+        layout.addWidget(search_results, 2, 0, 1, 1)
+        layout.addWidget(search_description, 3, 0, 1, 1)
         return widget
 
     def create_program_options_widget(self):
-        autostart_checkbox = QCheckBox("Run on startup (minimized)")
+        autostart_checkbox = QCheckBox("Run on boot (minimized)")
         autostart_checkbox.setChecked(is_run_on_startup())
         if autostart_checkbox.isChecked(): run_on_startup(True)  # Update the autostart entry to the current binary
         def toggle_auto_start(enabled: bool):
@@ -122,7 +138,7 @@ class DerpiWallpaperUI(QWidget):
         auto_refresh_checkbox.setChecked(CONFIG.enable_auto_refresh)
         def toggle_auto_refresh(enabled: bool):
             CONFIG.enable_auto_refresh = enabled
-            self.wpman.updater_worker.schedule_refresh(datetime.now() if enabled else None)
+            self.workers.wp_updater.schedule_refresh(datetime.now() if enabled else None)
         auto_refresh_checkbox.toggled.connect(toggle_auto_refresh)
 
         auto_refresh_interval_label = QLabel("Every:")
@@ -133,7 +149,7 @@ class DerpiWallpaperUI(QWidget):
         auto_refresh_interval.setSuffix(" min")
         def set_auto_refresh_interval(interval_mins: int):
             CONFIG.auto_refresh_interval_seconds = interval_mins*60
-            self.wpman.updater_worker.schedule_refresh(datetime.now())
+            self.workers.wp_updater.schedule_refresh(datetime.now())
         auto_refresh_interval.valueChanged.connect(set_auto_refresh_interval)
         auto_refresh_checkbox.toggled.connect(toggle_auto_refresh)
 
@@ -150,21 +166,22 @@ class DerpiWallpaperUI(QWidget):
 
         return widget
 
+    def update_wp(self):
+        self.workers.wp_updater.schedule_refresh(datetime.now(), update_ui=False)
+
     def create_update_widgets(self):
         update_wallpaper_button = QPushButton("Update wallpaper!")
-        def update_wp():
-            self.wpman.updater_worker.schedule_refresh(datetime.now())
-        update_wallpaper_button.released.connect(update_wp)
+        update_wallpaper_button.released.connect(self.update_wp)
 
         update_progress_bar = QProgressBar()
         def update_progress_ui():
             """Updates the progress bar and reenables the button."""
 
-            update_progress_bar.setMaximum(self.wpman.updater_worker.max_steps)
-            update_progress_bar.setValue(self.wpman.updater_worker.progress)
-            if self.wpman.updater_worker.progress >= self.wpman.updater_worker.max_steps:
+            update_progress_bar.setMaximum(self.workers.wp_updater.max_steps)
+            update_progress_bar.setValue(self.workers.wp_updater.progress)
+            if self.workers.wp_updater.progress >= self.workers.wp_updater.max_steps:
                 update_wallpaper_button.setDisabled(False)
-                next_refresh_time = self.wpman.updater_worker.get_next_refresh_time()
+                next_refresh_time = self.workers.wp_updater.get_next_refresh_time()
                 if next_refresh_time:
                     button_text = f"Update wallpaper! (next auto-refresh at {next_refresh_time.strftime("%H:%M")})"
                 else:
@@ -173,7 +190,7 @@ class DerpiWallpaperUI(QWidget):
             else:
                 update_wallpaper_button.setDisabled(True)
                 update_wallpaper_button.setText("Updating wallpaper...")
-        self.wpman.updater_worker.update_ui.connect(update_progress_ui)
+        self.workers.wp_updater.update_ui.connect(update_progress_ui)
 
         layout = QGridLayout()
         layout.addWidget(update_wallpaper_button, 6, 0, 1, 4)

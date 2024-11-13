@@ -9,7 +9,6 @@ class WorkerThread(Thread, QObject):
     stop_event: Event
 
     update_ui: SignalInstance = Signal() # type: ignore
-    progress = 0
     max_steps: int = 100
 
     def __init__(self) -> None:
@@ -21,9 +20,7 @@ class WorkerThread(Thread, QObject):
     def on_tick(self):
         ...
 
-    def set_progress(self, progress: int):
-        self.progress = progress
-        self.update_ui.emit()
+
 
     def run(self) -> None:
         while not self.stop_event.is_set():

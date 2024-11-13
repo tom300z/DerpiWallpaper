@@ -9,38 +9,34 @@ from datetime import datetime, timedelta
 from PySide6.QtCore import QObject, QThread, Signal, SignalInstance
 
 from derpiwallpaper.config import CONFIG
+from derpiwallpaper.utils import DerpibooruApiError, check_response
 from derpiwallpaper.worker import WorkerThread
 
 
-def check_response(response: requests.Response):
-    if response.status_code != 200:
-        raise RuntimeError(f"Failed to fetch initial page for determining total pages. '{response.request.url}' returned status code: {response.status_code}")
-
-    if not all([
-        "json" in response.headers.get('Content-Type', ""),
-        "total" in response.json(),
-        "images" in response.json()
-    ]):
-        raise RuntimeError(f"Failed to fetch initial page for determining total pages. '{response.request.url}' returned invalid body: {response.text}")
-
 class WallpaperUpdaterWorker(WorkerThread):
-    wpman: WallpaperManager
+    progress = 0
     max_steps = 4
 
+    _images_url: str
     _next_refresh_time: datetime | None
 
-    def __init__(self, wallpaper_manager: WallpaperManager):
+    def __init__(self):
         super().__init__()
-        self.wpman = wallpaper_manager
+        self._images_url = CONFIG.derpibooru_json_api_url + "search/images"
         self.schedule_refresh(datetime.now())
+
+    def set_progress(self, progress: int):
+        self.progress = progress
+        self.update_ui.emit()
 
     def on_tick(self) -> None:
         if self._next_refresh_time and datetime.now() >= self._next_refresh_time:
             self._refresh_wallpaper()
 
-    def schedule_refresh(self, time: datetime | None):
+    def schedule_refresh(self, time: datetime | None, update_ui = True):
         self._next_refresh_time = time
-        self.update_ui.emit()
+        if update_ui:
+            self.update_ui.emit()
 
     def get_next_refresh_time(self):
         return self._next_refresh_time
@@ -58,7 +54,7 @@ class WallpaperUpdaterWorker(WorkerThread):
             }
 
             # Fetch JSON data from Derpibooru for the first page to determine total pages
-            response = requests.get(self.wpman.api_url, params=params)
+            response = requests.get(self._images_url, params=params)
             self.set_progress(1)
 
             # Check if the request was successful and parse json
@@ -72,7 +68,7 @@ class WallpaperUpdaterWorker(WorkerThread):
             params["page"] = random.randint(1, max(1, total_pages))
 
             # Fetch JSON data for the random page
-            response = requests.get(self.wpman.api_url, params=params)
+            response = requests.get(self._images_url, params=params)
             self.set_progress(2)
 
             # Proceed with the rest of the script for the random page's images
@@ -101,25 +97,11 @@ class WallpaperUpdaterWorker(WorkerThread):
                 ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 0)
 
                 print(f"Wallpaper set successfully to a random image matching '{CONFIG.search_string}' from page {params["page"]}/{total_pages}. Runtime: {round((datetime.now()-START_TIME).total_seconds(),1)}s")
+        except DerpibooruApiError as e:
+            pass
         finally:
             self.set_progress(4)
             if CONFIG.enable_auto_refresh:
                 self.schedule_refresh(datetime.now() + timedelta(seconds=CONFIG.auto_refresh_interval_seconds))
             else:
                 self.schedule_refresh(None)
-
-
-
-
-class WallpaperManager:
-    api_url = "https://derpibooru.org/api/v1/json/search/images"
-
-    updater_worker: WallpaperUpdaterWorker
-
-    def __init__(self) -> None:
-
-        self.updater_worker = WallpaperUpdaterWorker(self)
-        self.updater_worker.start()
-
-    def set_random_wallpaper(self):
-        self.updater_worker._next_refresh_time = datetime.now()

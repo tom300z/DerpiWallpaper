@@ -6,6 +6,7 @@ from configobj import ConfigObj
 
 class DerpiWallpaperConfig:
     # Default configuration settings as class attributes
+    derpibooru_json_api_url = "https://derpibooru.org/api/v1/json/"
     search_string: str = "wallpaper,score.gt:200,safe,-anthro,-comic,-human"
     enable_auto_refresh: bool = False
     minimize_to_tray: bool = True

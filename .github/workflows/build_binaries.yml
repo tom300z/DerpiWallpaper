@@ -61,8 +61,11 @@ jobs:
       - name: Activate venv on Windows
         if: matrix.os == 'windows-latest'
         run: |
-          echo ".venv\Scripts" | Out-File -FilePath $Env:GITHUB_ENV -Encoding utf-8 -Append
-          echo $Env:PATH
+          echo "D:\a\DerpiWallpaper\DerpiWallpaper\.venv\Scripts" >> $GITHUB_PATH
+      - name: Activate venv on Windows
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo $PATH
           dir ".venv\Scripts"
       - name: Activate venv on Linux/macOS
         if: matrix.os != 'windows-latest'

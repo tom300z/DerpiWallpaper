@@ -1,7 +1,5 @@
-from collections.abc import Callable
 from threading import Event, Thread
 from time import sleep
-from typing import Any, Iterable, Mapping
 from PySide6.QtCore import Signal, SignalInstance, QObject
 
 
@@ -9,7 +7,6 @@ class WorkerThread(Thread, QObject):
     stop_event: Event
 
     update_ui: SignalInstance = Signal() # type: ignore
-    max_steps: int = 100
 
     def __init__(self) -> None:
         Thread.__init__(self)
@@ -19,7 +16,6 @@ class WorkerThread(Thread, QObject):
 
     def on_tick(self):
         ...
-
 
 
     def run(self) -> None:

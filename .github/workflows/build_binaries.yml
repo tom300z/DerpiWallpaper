@@ -92,6 +92,7 @@ jobs:
         with:
           name: ${{ runner.os }} Build
           path: |
-            build/*.exe
-            build/*.bin
+            build/DerpiWallpaper.exe
+            build/DerpiWallpaper.bin
+            build/DerpiWallpaper
           include-hidden-files: true

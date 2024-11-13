@@ -17,6 +17,7 @@ pywin32 = { version = "^308", platform  = "win32" }
 
 [tool.poetry.group.dev.dependencies]
 nuitka = {url = "https://github.com/Nuitka/Nuitka/archive/develop.zip"}
+imageio = "^2.36.0"
 
 [build-system]
 requires = ["poetry-core"]

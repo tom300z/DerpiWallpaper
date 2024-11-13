@@ -7,9 +7,11 @@ import math
 import os
 from datetime import datetime, timedelta
 from PySide6.QtCore import QObject, QThread, Signal, SignalInstance
+from tempfile import gettempdir
 
 from derpiwallpaper.config import CONFIG
 from derpiwallpaper.utils import DerpibooruApiError, check_response
+from derpiwallpaper.utils.set_wallpaper import set_wallpaper
 from derpiwallpaper.worker import WorkerThread
 
 
@@ -87,14 +89,15 @@ class WallpaperUpdaterWorker(WorkerThread):
                 image_url = random_image['view_url']
 
                 # Download the image
-                image_path = os.path.join(os.environ['TEMP'], f"derpiwallpaper_{random.randint(1000, 9999)}.png")
+                print(gettempdir())
+                image_path = os.path.join(gettempdir(), f"derpiwallpaper_{random.randint(1000, 9999)}.png")
                 with open(image_path, 'wb') as file:
                     file.write(requests.get(image_url).content)
                     self.set_progress(3)
 
 
                 # Set the downloaded image as the desktop wallpaper (Windows only)
-                ctypes.windll.user32.SystemParametersInfoW(20, 0, image_path, 0)
+                set_wallpaper(image_path)
 
                 print(f"Wallpaper set successfully to a random image matching '{CONFIG.search_string}' from page {params["page"]}/{total_pages}. Runtime: {round((datetime.now()-START_TIME).total_seconds(),1)}s")
         except DerpibooruApiError as e:

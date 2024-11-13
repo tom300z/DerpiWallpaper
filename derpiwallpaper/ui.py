@@ -99,7 +99,7 @@ class DerpiWallpaperUI(QWidget):
         search_results = QLabel("0 images match your search.")
         def update_results_label():
             if not self.workers.search.current_error_msg:
-                style = ""
+                style = "" if self.workers.search.current_result_count else "color: red"
                 results_text = f"{self.workers.search.current_result_count} images match your search."
             else:
                 style = "color: red"
@@ -174,10 +174,10 @@ class DerpiWallpaperUI(QWidget):
         update_wallpaper_button.released.connect(self.update_wp)
 
         update_progress_bar = QProgressBar()
-        def update_progress_ui():
+        update_progress_bar.setMaximum(self.workers.wp_updater.max_steps)
+        def update_ui():
             """Updates the progress bar and reenables the button."""
 
-            update_progress_bar.setMaximum(self.workers.wp_updater.max_steps)
             update_progress_bar.setValue(self.workers.wp_updater.progress)
             if self.workers.wp_updater.progress >= self.workers.wp_updater.max_steps:
                 update_wallpaper_button.setDisabled(False)
@@ -190,7 +190,14 @@ class DerpiWallpaperUI(QWidget):
             else:
                 update_wallpaper_button.setDisabled(True)
                 update_wallpaper_button.setText("Updating wallpaper...")
-        self.workers.wp_updater.update_ui.connect(update_progress_ui)
+
+
+            if not self.workers.search.current_result_count:
+                update_wallpaper_button.setDisabled(True)
+                update_wallpaper_button.setText("No wallpapers found.")
+
+        self.workers.wp_updater.update_ui.connect(update_ui)
+        self.workers.search.update_ui.connect(update_ui)
 
         layout = QGridLayout()
         layout.addWidget(update_wallpaper_button, 6, 0, 1, 4)

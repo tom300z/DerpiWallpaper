@@ -37,6 +37,7 @@ class SearchWorker(WorkerThread):
         try:
             # Set API parameters
             params = {
+                "key": CONFIG.derpibooru_json_api_key,  # If you have an API key, insert it here; otherwise, it will use the public anon key
                 "q": CONFIG.search_string,
                 "per_page": 1  # Maximum number of results to fetch (max allowed by the API for anon keys is 50)
             }

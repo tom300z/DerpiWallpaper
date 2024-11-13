@@ -13,10 +13,11 @@ from derpiwallpaper.config import CONFIG
 from derpiwallpaper.utils import DerpibooruApiError, check_response
 from derpiwallpaper.utils.set_wallpaper import set_wallpaper
 from derpiwallpaper.worker import WorkerThread
+from derpiwallpaper.workers import wman
 
 
 class WallpaperUpdaterWorker(WorkerThread):
-    progress = 0
+    progress = 4
     max_steps = 4
 
     _images_url: str
@@ -44,30 +45,19 @@ class WallpaperUpdaterWorker(WorkerThread):
         return self._next_refresh_time
 
     def _refresh_wallpaper(self) -> None:
+        if not wman().search.current_page_count:
+            return
         try:
             START_TIME = datetime.now()
             self.set_progress(0)
 
             # Set API parameters
             params = {
-                "key": "",  # If you have an API key, insert it here; otherwise, it will use the public anon key
+                "key": CONFIG.derpibooru_json_api_key,  # If you have an API key, insert it here; otherwise, it will use the public anon key
                 "q": CONFIG.search_string,
-                "per_page": 1  # Maximum number of results to fetch (max allowed by the API for anon keys is 50)
+                "per_page": 1,  # Maximum number of results to fetch (max allowed by the API for anon keys is 50)
+                "page": random.randint(1, max(1, wman().search.current_page_count))
             }
-
-            # Fetch JSON data from Derpibooru for the first page to determine total pages
-            response = requests.get(self._images_url, params=params)
-            self.set_progress(1)
-
-            # Check if the request was successful and parse json
-            check_response(response)
-            json_data = response.json()
-
-            # Calculate total pages
-            total_pages = math.ceil(json_data['total'] / params["per_page"])
-
-            # Select a random page (ensure it's at least 1, in case totalPages somehow ends up as 0)
-            params["page"] = random.randint(1, max(1, total_pages))
 
             # Fetch JSON data for the random page
             response = requests.get(self._images_url, params=params)
@@ -99,7 +89,7 @@ class WallpaperUpdaterWorker(WorkerThread):
                 # Set the downloaded image as the desktop wallpaper (Windows only)
                 set_wallpaper(image_path)
 
-                print(f"Wallpaper set successfully to a random image matching '{CONFIG.search_string}' from page {params["page"]}/{total_pages}. Runtime: {round((datetime.now()-START_TIME).total_seconds(),1)}s")
+                print(f"Wallpaper set successfully to a random image matching '{CONFIG.search_string}' from page {params["page"]}/{wman().search.current_page_count}. Runtime: {round((datetime.now()-START_TIME).total_seconds(),1)}s")
         except DerpibooruApiError as e:
             pass
         finally:

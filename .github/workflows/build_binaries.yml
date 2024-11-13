@@ -56,6 +56,12 @@ jobs:
         id: get_version
         run: echo "version=$(poetry version -s)" >> $GITHUB_ENV
 
+      - name: show py
+        run: |
+          which python
+          which poetry
+          python --version
+
       - name: Build Executable with Nuitka
         uses: Nuitka/Nuitka-Action@main
         with:

@@ -15,7 +15,7 @@ jobs:
       - name: Activate venv on Windows
         if: matrix.os == 'windows-latest'
         run: |
-          echo "c:\.venv\Scripts" >> $GITHUB_PATH
+          echo "PATH=c:\.venv\Scripts;$env:PATH" >> $GITHUB_ENV
       - name: Activate venv on Windows
         if: matrix.os == 'windows-latest'
         run: |

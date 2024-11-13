@@ -27,9 +27,24 @@ jobs:
       - name: Install poetry
         run: pipx install poetry
 
+
+      - name: Restore cached virtualenv
+        uses: actions/cache/restore@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('poetry.lock') }}
+          path: .venv
+
       - name: Install Dependencies
         run: |
           poetry install --with dev
+          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
+
+      - name: Saved cached virtualenv
+        uses: actions/cache/save@v4
+        with:
+          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}-${{ hashFiles('poetry.lock') }}
+          path: .venv
+
 
       - name: Activate venv on Windows
         if: matrix.os == 'windows-latest'

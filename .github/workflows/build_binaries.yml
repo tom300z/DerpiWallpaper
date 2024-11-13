@@ -78,6 +78,7 @@ jobs:
           script-name: derpiwallpaper/__main__.py
           onefile: true
           output-dir: build                # Specify output directory
+          output-filename: DerpiWallpaper  # Base name for the output file
           enable-plugins: pyside6
           windows-console-mode: disable
           onefile-tempdir-spec: "{CACHE_DIR}/{PRODUCT}/{VERSION}"

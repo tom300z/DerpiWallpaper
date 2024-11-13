@@ -31,6 +31,7 @@ jobs:
           python -m pipx install poetry
           poetry config virtualenvs.create false
           which poetry
+          python --version
 
 
       - name: Restore cached virtualenv

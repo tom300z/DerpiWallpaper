@@ -47,10 +47,10 @@ jobs:
 
       - name: Activate venv on Windows
         if: matrix.os == 'windows-latest'
-        run: .venv\Scripts\activate.ps1
+        run: echo ".venv\Scripts" >> $GITHUB_PATH
       - name: Activate venv on Linux/macOS
         if: matrix.os != 'windows-latest'
-        run: source .venv/bin/activate
+        run: echo ".venv/bin" >> $GITHUB_PATH
 
 
       - name: Saved cached virtualenv

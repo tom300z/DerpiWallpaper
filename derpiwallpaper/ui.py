@@ -10,7 +10,8 @@ from derpiwallpaper.autostart import is_run_on_startup, run_on_startup
 from derpiwallpaper.config import CONFIG
 from derpiwallpaper.wallpapermanager import WallpaperManager
 
-ICON_PATH = Path(__file__).parent.parent / "data" / "derpibooru.ico"
+ICON_PATH = Path(__file__).parent.parent / "data" / "derpiwallpaper.ico"
+
 
 class DerpiWallpaperUI(QWidget):
     wpman: WallpaperManager
@@ -18,6 +19,7 @@ class DerpiWallpaperUI(QWidget):
     def __init__(self, wallpaper_manager: WallpaperManager) -> None:
         super().__init__()
         self.wpman = wallpaper_manager
+        self.icon = QIcon(str(ICON_PATH))
 
         layout = QGridLayout(self)
         layout.addWidget(self.create_search_options_widget(), 0, 0, 1, 4)
@@ -38,7 +40,7 @@ class DerpiWallpaperUI(QWidget):
         if enabled:
             # Set up the tray icon
             self.tray_icon = QSystemTrayIcon(self)
-            self.tray_icon.setIcon(QIcon(str(ICON_PATH)))  # Replace with your icon path
+            self.tray_icon.setIcon(self.windowIcon())  # Replace with your icon path
 
             # Set up the context menu for the tray icon
             tray_menu = QMenu()

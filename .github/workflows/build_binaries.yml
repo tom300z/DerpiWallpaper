@@ -27,9 +27,8 @@ jobs:
       - name: Install poetry
         run: |
           which python
-          pipenv shell 3.12
-          which python
-          pipx install poetry
+          python -m pipx install poetry
+          which poetry
 
 
       - name: Restore cached virtualenv

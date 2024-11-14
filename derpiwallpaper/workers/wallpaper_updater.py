@@ -15,19 +15,22 @@ class WallpaperUpdaterWorker(WorkerThread):
     max_steps = 4
     temporary_error: str | None = None
 
-    _images_url: str
-    _next_refresh_time: datetime | None
+    _images_url: str = CONFIG.derpibooru_json_api_url + "search/images"
+    _next_refresh_time: datetime | None = None
 
     def __init__(self):
         super().__init__()
-        self._images_url = CONFIG.derpibooru_json_api_url + "search/images"
-        self.schedule_refresh(datetime.now())
 
     def set_progress(self, progress: int):
         self.progress = progress
         self.update_ui.emit()
 
     def on_tick(self) -> None:
+        # Schedule refresh if auto-refresh is enabled and no refresh is scheduled in the configured interval
+        if CONFIG.enable_auto_refresh == True:
+            if not self._next_refresh_time or (self._next_refresh_time - datetime.now()).total_seconds() > CONFIG.auto_refresh_interval_seconds:
+                self.schedule_refresh(datetime.now() + timedelta(seconds=CONFIG.auto_refresh_interval_seconds))
+
         if self._next_refresh_time and datetime.now() >= self._next_refresh_time:
             self._refresh_wallpaper()
 
@@ -35,6 +38,12 @@ class WallpaperUpdaterWorker(WorkerThread):
         self._next_refresh_time = time
         if update_ui:
             self.update_ui.emit()
+
+    def clear_refresh(self, update_ui = True):
+        self._next_refresh_time = None
+        if update_ui:
+            self.update_ui.emit()
+
 
     def get_next_refresh_time(self):
         return self._next_refresh_time
@@ -76,8 +85,7 @@ class WallpaperUpdaterWorker(WorkerThread):
                 image_url = random_image['view_url']
 
                 # Download the image
-                image_path = get_user_images_folder() / "DerpiWallpaper" / f"{random_image['id']}.png"
-                image_path.parent.mkdir(parents=True, exist_ok = True)
+                image_path = CONFIG.wallpaper_folder / f"derpibooru_{random_image['id']}.png"
                 with open(image_path, 'wb') as file:
                     file.write(requests.get(image_url).content)
                     self.set_progress(3)

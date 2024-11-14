@@ -3,9 +3,9 @@
 from datetime import datetime
 from pathlib import Path
 from PySide6.QtCore import Qt, QEvent, SignalInstance, Slot, Signal, QUrl
-from PySide6.QtGui import QIcon, QAction
+from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from PySide6.QtWidgets import QGridLayout, QLabel, QLineEdit, QProgressBar, QPushButton, QWidget, QGroupBox, QCheckBox, QSpinBox, QSystemTrayIcon, QMenu, QMainWindow, QApplication, QMessageBox
-from PySide6.QtGui import QDesktopServices
+from PySide6.QtGui import QDesktopServices, QPixmap, QPainter
 from derpiwallpaper.autostart import is_run_on_startup, run_on_startup
 from derpiwallpaper.config import CONFIG
 from derpiwallpaper.workers import WorkerManager, wman
@@ -69,10 +69,11 @@ class DerpiWallpaperUI(QWidget):
         self.wman = wman()
 
         layout = QGridLayout(self)
-        layout.addWidget(self.create_search_options_widget(), 0, 0, 1, 4)
-        layout.addWidget(self.create_program_options_widget(), 1, 0, 1, 4)
+        layout.addWidget(self.create_search_options_widget(), 0, 0)
+        layout.addWidget(self.create_program_options_widget(), 1, 0)
+        layout.addWidget(self.create_recent_wallpapers_widget(), 0, 1, 2, 1)
         layout.setRowStretch(5, 1)
-        layout.addLayout(self.create_update_widget(), 6, 0, 1, 4)
+        layout.addLayout(self.create_update_widget(), 6, 0, 1, 2)
 
         #envvars = QTextBrowser()
         #envvars.setText('\n'.join(f'{k} = {v}' for k, v in os.environ.items()))
@@ -94,7 +95,7 @@ class DerpiWallpaperUI(QWidget):
             restore_action = QAction("Restore", self)
             restore_action.triggered.connect(self.show_and_raise)
             refresh_action = QAction("Refresh wallpaper", self)
-            refresh_action.triggered.connect(self.update_wp)
+            refresh_action.triggered.connect(self.refresh_wp)
 
 
             exit_action = QAction("Exit", self)
@@ -157,6 +158,7 @@ class DerpiWallpaperUI(QWidget):
 
             search_results.setStyleSheet(style)
             search_results.setText(results_text)
+        update_search_options_widget()
         self.wman.search.update_ui.connect(update_search_options_widget)
 
         # Layout
@@ -187,7 +189,7 @@ class DerpiWallpaperUI(QWidget):
         auto_refresh_checkbox.setChecked(CONFIG.enable_auto_refresh)
         def toggle_auto_refresh(enabled: bool):
             CONFIG.enable_auto_refresh = enabled
-            self.wman.wp_updater.schedule_refresh(datetime.now() if enabled else None)
+            self.wman.wp_updater.clear_refresh()
         auto_refresh_checkbox.toggled.connect(toggle_auto_refresh)
 
         auto_refresh_interval_label = QLabel("Every:")
@@ -198,7 +200,6 @@ class DerpiWallpaperUI(QWidget):
         auto_refresh_interval.setSuffix(" min")
         def set_auto_refresh_interval(interval_mins: int):
             CONFIG.auto_refresh_interval_seconds = interval_mins*60
-            self.wman.wp_updater.schedule_refresh(datetime.now())
         auto_refresh_interval.valueChanged.connect(set_auto_refresh_interval)
         auto_refresh_checkbox.toggled.connect(toggle_auto_refresh)
 
@@ -215,12 +216,52 @@ class DerpiWallpaperUI(QWidget):
 
         return widget
 
-    def update_wp(self):
+    def create_recent_wallpapers_widget(self):
+        wallpapers_to_keep_label = QLabel("Keep last:")
+        wallpapers_to_keep = QSpinBox()
+        wallpapers_to_keep.setMinimum(1)
+        wallpapers_to_keep.setMaximum(999999)
+        wallpapers_to_keep.setValue(CONFIG.wallpapers_to_keep)
+        def set_wallpapers_to_keep(number: int):
+            CONFIG.wallpapers_to_keep = number
+            self.wman.cleanup.schedule_cleanup()
+        wallpapers_to_keep.valueChanged.connect(set_wallpapers_to_keep)
+
+        current_wallpaper_label = QLabel("Current wallpaper:")
+        current_wallpaper_image = QLabel()
+        current_wallpaper_image.setFixedSize(160, 90)
+        current_wallpaper_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        def update_current_wallpaper():
+            hidpi_factor = QGuiApplication.primaryScreen().devicePixelRatio()
+            pixmap = QPixmap(CONFIG.current_wallpaper_path).scaled(int(160*hidpi_factor), int(90*hidpi_factor), Qt.AspectRatioMode.KeepAspectRatio)
+            pixmap.setDevicePixelRatio(hidpi_factor)
+            current_wallpaper_image.setPixmap(pixmap)
+        update_current_wallpaper()
+        self.wman.wp_updater.update_ui.connect(update_current_wallpaper)
+
+        open_wallpaper_folder_button = QPushButton("Open wallpaper folder")
+        open_wallpaper_folder_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(CONFIG.wallpaper_folder))))
+
+        # Layout
+        widget = QGroupBox("Recent Wallpapers")
+        layout = QGridLayout(widget)
+
+        # Add elements to layout
+        layout.addWidget(current_wallpaper_label,     0, 0, 1, 2)
+        layout.addWidget(current_wallpaper_image,     1, 0, 1, 2)
+        layout.addWidget(open_wallpaper_folder_button, 2, 0, 1, 2)
+        layout.addWidget(wallpapers_to_keep_label, 3, 0)
+        layout.addWidget(wallpapers_to_keep,       3, 1)
+
+        return widget
+
+
+    def refresh_wp(self):
         self.wman.wp_updater.schedule_refresh(datetime.now(), update_ui=False)
 
     def create_update_widget(self):
         update_wallpaper_button = QPushButton("Update wallpaper!")
-        update_wallpaper_button.released.connect(self.update_wp)
+        update_wallpaper_button.clicked.connect(self.refresh_wp)
         update_progress_bar = QProgressBar()
         update_progress_bar.setMaximum(self.wman.wp_updater.max_steps)
         update_error_label = QLabel("blub")
@@ -256,7 +297,7 @@ class DerpiWallpaperUI(QWidget):
                 update_error_label.setText(temp_err)
             else:
                 update_error_label.hide()
-
+        update_update_widget()
         self.wman.wp_updater.update_ui.connect(update_update_widget)
         self.wman.search.update_ui.connect(update_update_widget)
 

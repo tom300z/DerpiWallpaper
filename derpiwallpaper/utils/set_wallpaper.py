@@ -3,6 +3,8 @@ import platform
 import subprocess
 from pathlib import Path
 
+from derpiwallpaper.config import CONFIG
+
 def set_wallpaper(image_path: str | Path):
     """
     Sets the desktop wallpaper across platforms.
@@ -58,3 +60,6 @@ def set_wallpaper(image_path: str | Path):
             pass
     else:
         print("Unsupported operating system for setting wallpaper.")
+        return
+
+    CONFIG.current_wallpaper_path = str(image_path)

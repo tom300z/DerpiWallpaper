@@ -1,8 +1,8 @@
 from configparser import ConfigParser
 from pathlib import Path
-from typing import Any, TypedDict
 from appdirs import user_config_dir
-from configobj import ConfigObj
+
+from derpiwallpaper.utils import get_user_images_folder
 
 class DerpiWallpaperConfig:
     # Default configuration settings as class attributes
@@ -12,6 +12,9 @@ class DerpiWallpaperConfig:
     enable_auto_refresh: bool = False
     minimize_to_tray: bool = True
     auto_refresh_interval_seconds: int = 360
+    current_wallpaper_path: str = ""
+    wallpapers_to_keep: int = 100
+    wallpaper_folder: Path = get_user_images_folder() / "DerpiWallpaper"
 
     @property
     def appdir(self) -> Path:
@@ -68,8 +71,9 @@ class DerpiWallpaperConfig:
         with open(self.config_path, "w") as configfile:
             self.config.write(configfile)
 
-
 # Create config instance
 CONFIG = DerpiWallpaperConfig()
+CLEANUP_INTERVAL = 60  # Intentionally hardcoded to avoid accidental cleanup
 
-
+# Create wallpaper folder
+CONFIG.wallpaper_folder.mkdir(parents=True, exist_ok = True)

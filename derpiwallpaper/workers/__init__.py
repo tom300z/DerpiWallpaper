@@ -3,6 +3,7 @@ from __future__ import annotations
 from PySide6.QtCore import QThread, Signal, SignalInstance, QObject
 
 
+
 def wman() -> WorkerManager:
     assert _WMAN, 'Worker manager must be running when calling wman()'
     return _WMAN
@@ -37,6 +38,7 @@ class WorkerThread(QThread):
 
 from derpiwallpaper.workers.search import SearchWorker
 from derpiwallpaper.workers.wallpaper_updater import WallpaperUpdaterWorker
+from derpiwallpaper.workers.cleanup import WallpaperCleanupWorker
 
 _WMAN: WorkerManager | None = None
 
@@ -56,13 +58,17 @@ class WorkerManager(QObject):
         self.search.on_error.connect(self.on_error.emit)
         self.wp_updater = WallpaperUpdaterWorker()
         self.wp_updater.on_error.connect(self.on_error.emit)
+        self.cleanup = WallpaperCleanupWorker()
+        self.cleanup.on_error.connect(self.on_error.emit)
 
         self.search.start()
         self.wp_updater.start()
+        self.cleanup.start()
 
     def stop(self):
         global _WMAN
 
+        self.cleanup.stop()
         self.wp_updater.stop()
         self.search.stop()
 

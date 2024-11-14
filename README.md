@@ -5,9 +5,10 @@ A tiny Qt application to your wallpaper to a random derpibooru.org image matchin
 
 Features:
 - No installation required
-- Cross platform (tested on Windows and Linux (KDE))
+- Cross platform (tested on Windows, GNOME & KDE)
 - Fully customizable via official Derpibooru [search syntax](https://derpibooru.org/pages/search_syntax)
-- Auto refresh
+- Configurable Auto refresh
+- Save as many recent wallpapers as you want
 - Small memory footprint (<50MB)
 
 ## How to use

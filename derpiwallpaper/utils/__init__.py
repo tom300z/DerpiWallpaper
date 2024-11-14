@@ -1,4 +1,7 @@
 from datetime import datetime
+import os
+from pathlib import Path
+import platform
 from time import sleep
 
 import requests
@@ -7,7 +10,6 @@ def wait_until(target_time: datetime):
     now = datetime.now()
     if target_time > now:
         wait_seconds = (target_time - now).total_seconds()
-        print(f"Waiting {wait_seconds:.2f} seconds until {target_time}")
         sleep(wait_seconds)
 
 class DerpibooruApiError(RuntimeError):
@@ -34,6 +36,19 @@ def check_response(response: requests.Response):
         "images" in response.json()
     ]):
         raise DerpibooruApiError(response.status_code, response.text, f"Failed to call derpibooru API. '{response.request.url}' returned invalid body: {response.text}")
+
+
+def get_user_images_folder() -> Path:
+    if platform.system() == 'Windows':
+        # Windows usually uses "Pictures" as the name of the images folder
+        return Path(os.getenv('USERPROFILE', '')) / 'Pictures'
+    elif platform.system() == 'Darwin':  # macOS
+        return Path.home() / 'Pictures'
+    elif platform.system() == 'Linux':
+        # On Linux, typically the images folder is in the home directory
+        return Path.home() / 'Pictures'
+    else:
+        raise NotImplementedError(f"Unsupported platform: {platform.system()}")
 
 
 # P = ParamSpec("P")  # Parameter specification for the subscriber arguments

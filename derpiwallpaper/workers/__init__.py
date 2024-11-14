@@ -52,13 +52,13 @@ class WorkerManager(QObject):
         assert not _WMAN, 'Only one worker manager can cun at a time.'
         _WMAN = self
 
-        self.wp_updater = WallpaperUpdaterWorker()
-        self.wp_updater.on_error.connect(self.on_error.emit)
         self.search = SearchWorker()
         self.search.on_error.connect(self.on_error.emit)
+        self.wp_updater = WallpaperUpdaterWorker()
+        self.wp_updater.on_error.connect(self.on_error.emit)
 
-        self.wp_updater.start()
         self.search.start()
+        self.wp_updater.start()
 
     def stop(self):
         global _WMAN

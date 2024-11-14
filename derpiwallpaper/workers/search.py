@@ -15,25 +15,21 @@ from derpiwallpaper.workers import WorkerThread
 
 class SearchWorker(WorkerThread):
 
-    _images_url: str
+    _images_url: str = CONFIG.derpibooru_json_api_url + "search/images"
     _current_search_string: str | None = None
     current_result_count: int = 0
     current_page_count: int = 0
     temporary_error: str | None = None
-    _last_request_time: datetime
-
-    def __init__(self):
-        super().__init__()
-        self._images_url = CONFIG.derpibooru_json_api_url + "search/images"
-        self._last_request_time = datetime.now()
+    _last_request_time: datetime | None = None
 
     def on_tick(self) -> None:
         if CONFIG.search_string != self._current_search_string or self.temporary_error:
             self._refresh_results()
 
     def _refresh_results(self) -> None:
-        # Wait until 1s after the last request to avoid hitting rate limits
-        wait_until(self._last_request_time+timedelta(seconds=1))
+        if self._last_request_time:
+            # Wait until 1s after the last request to avoid hitting rate limits
+            wait_until(self._last_request_time+timedelta(seconds=1))
 
         try:
             # Set API parameters
@@ -66,4 +62,9 @@ class SearchWorker(WorkerThread):
 
         finally:
             self.update_ui.emit()
+
+    def start(self) -> None:
+        super().start()
+        self._refresh_results()  # Ensure initial refresh happens before other threads start
+
 

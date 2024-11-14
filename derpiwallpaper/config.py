@@ -14,12 +14,12 @@ class DerpiWallpaperConfig:
     auto_refresh_interval_seconds: int = 360
 
     @property
-    def appdir(self) -> str:
-        return user_config_dir(appname="DerpiWallpaper", appauthor=False)
+    def appdir(self) -> Path:
+        return Path(user_config_dir(appname="DerpiWallpaper", appauthor=False))
 
     def __init__(self):
         # Define the config path using appdirs
-        config_dir = Path(self.appdir)
+        config_dir = self.appdir
         config_dir.mkdir(parents=True, exist_ok=True)
         self.config_path = config_dir / "config.ini"
 

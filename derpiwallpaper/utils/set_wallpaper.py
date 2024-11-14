@@ -3,7 +3,7 @@ import platform
 import subprocess
 from pathlib import Path
 
-def set_wallpaper(image_path: str):
+def set_wallpaper(image_path: str | Path):
     """
     Sets the desktop wallpaper across platforms.
 

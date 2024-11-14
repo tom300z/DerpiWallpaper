@@ -1,17 +1,11 @@
 from  __future__ import annotations
-from threading import Thread
 from urllib.parse import urlsplit
 import requests
-import ctypes
 import random
-import math
-import os
 from datetime import datetime, timedelta
-from PySide6.QtCore import QObject, QThread, Signal, SignalInstance
-from tempfile import gettempdir
 
 from derpiwallpaper.config import CONFIG
-from derpiwallpaper.utils import DerpibooruApiError, check_response
+from derpiwallpaper.utils import DerpibooruApiError, check_response, get_user_images_folder
 from derpiwallpaper.utils.set_wallpaper import set_wallpaper
 from derpiwallpaper.workers import WorkerThread, wman
 
@@ -48,6 +42,7 @@ class WallpaperUpdaterWorker(WorkerThread):
     def _refresh_wallpaper(self) -> None:
         if not wman().search.current_page_count:
             self.temporary_error = "No images found!"
+            self.update_ui.emit()
             return
         try:
             START_TIME = datetime.now()
@@ -81,8 +76,8 @@ class WallpaperUpdaterWorker(WorkerThread):
                 image_url = random_image['view_url']
 
                 # Download the image
-                print(gettempdir())
-                image_path = os.path.join(gettempdir(), f"derpiwallpaper_{random.randint(1000, 9999)}.png")
+                image_path = get_user_images_folder() / "DerpiWallpaper" / f"{random_image['id']}.png"
+                image_path.parent.mkdir(parents=True, exist_ok = True)
                 with open(image_path, 'wb') as file:
                     file.write(requests.get(image_url).content)
                     self.set_progress(3)

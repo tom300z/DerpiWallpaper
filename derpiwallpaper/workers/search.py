@@ -1,5 +1,6 @@
 from  __future__ import annotations
 from threading import Thread
+from urllib.parse import urlsplit
 import requests
 import ctypes
 import random
@@ -10,7 +11,7 @@ from PySide6.QtCore import QObject, QThread, Signal, SignalInstance
 
 from derpiwallpaper.config import CONFIG
 from derpiwallpaper.utils import DerpibooruApiError, check_response, wait_until
-from derpiwallpaper.worker import WorkerThread
+from derpiwallpaper.workers import WorkerThread
 
 class SearchWorker(WorkerThread):
 
@@ -18,7 +19,7 @@ class SearchWorker(WorkerThread):
     _current_search_string: str | None = None
     current_result_count: int = 0
     current_page_count: int = 0
-    current_error_msg: str | None = None
+    temporary_error: str | None = None
     _last_request_time: datetime
 
     def __init__(self):
@@ -27,7 +28,7 @@ class SearchWorker(WorkerThread):
         self._last_request_time = datetime.now()
 
     def on_tick(self) -> None:
-        if CONFIG.search_string != self._current_search_string:
+        if CONFIG.search_string != self._current_search_string or self.temporary_error:
             self._refresh_results()
 
     def _refresh_results(self) -> None:
@@ -56,10 +57,12 @@ class SearchWorker(WorkerThread):
             # Update results & pages
             self.current_result_count = json_data['total']
             self.current_page_count = math.ceil(json_data['total'] / params["per_page"])
-            self.current_error_msg = None
+            self.temporary_error = None
 
         except DerpibooruApiError as e:
-            self.current_error_msg = e.error
+            self.temporary_error = f'Invalid search string: {e.error}'
+        except requests.ConnectionError as e:
+            self.temporary_error = f"Unable to connect to {urlsplit(self._images_url).netloc}."
 
         finally:
             self.update_ui.emit()

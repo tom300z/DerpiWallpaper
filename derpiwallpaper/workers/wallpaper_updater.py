@@ -1,5 +1,6 @@
 from  __future__ import annotations
 from threading import Thread
+from urllib.parse import urlsplit
 import requests
 import ctypes
 import random
@@ -12,13 +13,13 @@ from tempfile import gettempdir
 from derpiwallpaper.config import CONFIG
 from derpiwallpaper.utils import DerpibooruApiError, check_response
 from derpiwallpaper.utils.set_wallpaper import set_wallpaper
-from derpiwallpaper.worker import WorkerThread
-from derpiwallpaper.workers import wman
+from derpiwallpaper.workers import WorkerThread, wman
 
 
 class WallpaperUpdaterWorker(WorkerThread):
     progress = 4
     max_steps = 4
+    temporary_error: str | None = None
 
     _images_url: str
     _next_refresh_time: datetime | None
@@ -46,6 +47,7 @@ class WallpaperUpdaterWorker(WorkerThread):
 
     def _refresh_wallpaper(self) -> None:
         if not wman().search.current_page_count:
+            self.temporary_error = "No images found!"
             return
         try:
             START_TIME = datetime.now()
@@ -89,9 +91,12 @@ class WallpaperUpdaterWorker(WorkerThread):
                 # Set the downloaded image as the desktop wallpaper (Windows only)
                 set_wallpaper(image_path)
 
+                self.temporary_error = None
                 print(f"Wallpaper set successfully to a random image matching '{CONFIG.search_string}' from page {params["page"]}/{wman().search.current_page_count}. Runtime: {round((datetime.now()-START_TIME).total_seconds(),1)}s")
         except DerpibooruApiError as e:
-            pass
+            self.temporary_error = f'Derpibooru API Error: {e.error}'
+        except requests.ConnectionError as e:
+            self.temporary_error = f"Unable to connect to {urlsplit(self._images_url).netloc}."
         finally:
             self.set_progress(4)
             if CONFIG.enable_auto_refresh:

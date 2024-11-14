@@ -11,9 +11,14 @@ Features:
 - Save as many recent wallpapers as you want
 - Small memory footprint (<50MB)
 
+## Download
+See the [Releases](https://github.com/tom300z/DerpiWallpaper/releases) page for downloads.
+
 ## How to use
 ![App Image](docs/app.png)
-The app is pretty self explanatory. Just put the binary anywhere on your PC and start it. You can also configure the app to run on boot.
+Download the executable for your OS from the releases page and run it.
+
+The app itself is pretty self explanatory. Just put the binary anywhere on your PC and start it. You can also configure the app to run on boot.
 
 ## Development
 ### Setting up the development environment

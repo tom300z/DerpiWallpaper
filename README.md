@@ -35,3 +35,6 @@ nuitka .\derpiwallpaper\__main__.py --msvc=latest --onefile --enable-plugin=pysi
 sudo apt install python3-dev patchelf gcc
 nuitka ./derpiwallpaper/__main__.py --onefile --enable-plugin=pyside6 --windows-console-mode=disable --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" --product-name=DerpiWallpaper --product-version=$(poetry version -s) --output-filename="DerpiWallpaper" --linux-icon="data/derpiwallpaper.png" --include-data-files="data/*=data/"
 ```
+
+# Ponies 2 Electric Boogaloo
+Ponies Ponies Ponies Ponies

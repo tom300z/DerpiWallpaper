@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -xeuo pipefail
 
 # Build DerpiWallpaper for Linux using Nuitka
 
@@ -20,6 +20,7 @@ fi
 
 mkdir -p build
 poetry install
+which poetry
 poetry run python -m nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \

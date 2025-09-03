@@ -1,4 +1,4 @@
-from configparser import ConfigParser
+from configparser import ConfigParser, ParsingError
 from pathlib import Path
 from appdirs import user_config_dir
 
@@ -29,8 +29,16 @@ class DerpiWallpaperConfig:
         # Load or initialize the config file
         self.config = ConfigParser()
         if self.config_path.exists():
-            self.config.read(self.config_path)
-        else:
+            try:
+                self.config.read(self.config_path)
+            except ParsingError:
+                # Rename old config and create a new blank one
+                corrupt_config_path = config_dir / "config-corrupted.ini"
+                corrupt_config_path.unlink(True)
+                self.config_path.rename(corrupt_config_path)
+                print(f'Config file could not be read. Renamed it to "{corrupt_config_path}" and loaded the default values.')
+
+        if "DerpiWallpaper" not in self.config:
             self.config["DerpiWallpaper"] = {}
 
         # Load or initialize attributes from the file

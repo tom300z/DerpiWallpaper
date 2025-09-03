@@ -35,6 +35,6 @@ poetry run python -m nuitka `
   --product-name=DerpiWallpaper `
   --product-version=$version `
   --output-filename="DerpiWallpaper.exe" `
-  --output-dir build `
+  --output-dir=build `
   --windows-icon-from-ico="data\derpiwallpaper.ico" `
   --include-data-files="data/*=data/"

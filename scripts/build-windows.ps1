@@ -25,6 +25,7 @@ if ($content -ne $version) {
 
 New-Item -ItemType Directory -Force -Path build | Out-Null
 
+poetry install
 poetry run nuitka \
   .\derpiwallpaper\__main__.py \
   --msvc=latest \

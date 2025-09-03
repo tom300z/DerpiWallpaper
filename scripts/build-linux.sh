@@ -20,6 +20,7 @@ fi
 
 mkdir -p build
 
+poetry install
 poetry run nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \

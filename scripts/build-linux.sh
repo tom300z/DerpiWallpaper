@@ -22,7 +22,6 @@ mkdir -p build
 deactivate || true
 poetry install
 source .venv/bin/activate
-which python
 python -m nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \

@@ -6,14 +6,14 @@ from PySide6.QtCore import Qt, QEvent, SignalInstance, Slot, Signal, QUrl
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from PySide6.QtWidgets import QGridLayout, QLabel, QLineEdit, QProgressBar, QPushButton, QWidget, QGroupBox, QCheckBox, QSpinBox, QSystemTrayIcon, QMenu, QMainWindow, QApplication, QMessageBox
 from PySide6.QtGui import QDesktopServices, QPixmap, QPainter
-from derpiwallpaper._version import PACKAGE_VERSION
+
 from derpiwallpaper.autostart import is_run_on_startup, run_on_startup
-from derpiwallpaper.config import CONFIG
+from derpiwallpaper.config import CONFIG, DATA_PATH, PACKAGE_VERSION
 from derpiwallpaper.workers import WorkerManager, wman
 import traceback
 from urllib.parse import quote
 
-ICON_PATH = Path(__file__).parent.parent / "data" / "derpiwallpaper.ico"
+ICON_PATH = DATA_PATH / "derpiwallpaper.ico"
 
 class DerpiWallpaperApp(QApplication):
     start_minimized: bool

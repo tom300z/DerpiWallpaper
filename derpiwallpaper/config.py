@@ -4,7 +4,14 @@ from appdirs import user_config_dir
 
 from derpiwallpaper.utils import get_user_images_folder
 
-from derpiwallpaper._version import PACKAGE_VERSION as PACKAGE_VERSION
+
+DATA_PATH = Path(__file__).parent.parent / "data"
+_VERSION_FILE_PATH = DATA_PATH / "version.txt"
+if _VERSION_FILE_PATH.is_file():
+    PACKAGE_VERSION = _VERSION_FILE_PATH.read_text().splitlines()[0]
+else:
+    PACKAGE_VERSION = "UNKNOWN"
+
 
 class DerpiWallpaperConfig:
     # Default configuration settings as class attributes

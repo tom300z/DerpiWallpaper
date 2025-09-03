@@ -19,9 +19,11 @@ if ! grep -Fxq "$version" data/version.txt; then
 fi
 
 mkdir -p build
+deactivate || true
 poetry install
-which poetry
-poetry run python -m nuitka \
+source .venv/bin/activate
+which python
+python -m nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \
   --enable-plugin=pyside6 \

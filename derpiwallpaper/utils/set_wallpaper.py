@@ -73,7 +73,7 @@ def set_wallpaper(image_path: str | Path):
 
     if system == "Windows":
         # Windows: Use ctypes to set the wallpaper
-        ctypes.windll.user32.SystemParametersInfoW(20, 0, str(image_path), 0)
+        ctypes.windll.user32.SystemParametersInfoW(20, 0, str(image_path), 0x01 | 0x02)
 
     elif system == "Darwin":  # macOS
         # macOS: Use AppleScript to set the wallpaper

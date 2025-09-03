@@ -19,7 +19,7 @@ jobs:
         id: setup_python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.13' # Version range or exact version of a Python version to use, using SemVer's version range syntax
+          python-version: '3.13'
           architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
           cache: 'pip'
           cache-dependency-path: |
@@ -34,12 +34,7 @@ jobs:
           python --version
 
 
-      - name: Restore cached virtualenv
-        uses: actions/cache/restore@v4
-        with:
-          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}--${{ hashFiles('poetry.lock') }}
-          path: .venv
-
+      # Use in-project venv but don't cache it to avoid mismatch/broken issues
       - name: Bind Poetry to runner Python (Linux/macOS)
         if: matrix.os != 'windows-latest'
         shell: bash
@@ -72,11 +67,7 @@ jobs:
         run: echo ".venv/bin" >> $GITHUB_PATH
 
 
-      - name: Saved cached virtualenv
-        uses: actions/cache/save@v4
-        with:
-          key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}--${{ hashFiles('poetry.lock') }}
-          path: .venv
+      # Intentionally do not cache .venv
 
       - name: Install system build deps (Linux)
         if: matrix.os == 'ubuntu-latest'

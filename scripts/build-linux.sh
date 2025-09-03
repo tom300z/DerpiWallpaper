@@ -19,6 +19,7 @@ if ! grep -Fxq "$version" data/version.txt; then
 fi
 
 mkdir -p build
+poetry install
 poetry run python -m nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \

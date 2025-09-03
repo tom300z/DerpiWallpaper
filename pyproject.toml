@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "derpiwallpaper"
-version = "1.0.1"
+version = "1.0.2"
 description = "Small utility that sets the windows desktop wallpaper to a random derpibooru image matching a query string."
 authors = ["tom300z"]
 license = "BSD"

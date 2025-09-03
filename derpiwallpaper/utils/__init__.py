@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import platform
 from time import sleep
+import re
 
 import requests
 
@@ -50,6 +51,20 @@ def get_user_images_folder() -> Path:
     else:
         raise NotImplementedError(f"Unsupported platform: {platform.system()}")
 
+
+def find_executables(pattern: re.Pattern):
+    """Yields executables from system PATH that match a regex"""
+    for path_dir in os.environ.get("PATH", "").split(os.pathsep):
+        p = Path(path_dir)
+        if not p.is_dir():
+            continue
+        try:
+            for entry in p.iterdir():
+                if pattern.match(entry.name) and entry.is_file() and os.access(entry, os.X_OK):
+                    yield entry
+        except PermissionError:
+            # Skip directories we can't access
+            continue
 
 # P = ParamSpec("P")  # Parameter specification for the subscriber arguments
 

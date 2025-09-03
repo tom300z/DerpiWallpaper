@@ -25,16 +25,16 @@ if ($content -ne $version) {
 
 New-Item -ItemType Directory -Force -Path build | Out-Null
 poetry install
-poetry run python -m nuitka \
-  .\derpiwallpaper\__main__.py \
-  --msvc=latest \
-  --onefile \
-  --enable-plugin=pyside6 \
-  --windows-console-mode=disable \
-  --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" \
-  --product-name=DerpiWallpaper \
-  --product-version=$version \
-  --output-filename="DerpiWallpaper.exe" \
-  --output-dir build \
-  --windows-icon-from-ico="data\derpiwallpaper.ico" \
+poetry run python -m nuitka `
+  .\derpiwallpaper\__main__.py `
+  --msvc=latest `
+  --onefile `
+  --enable-plugin=pyside6 `
+  --windows-console-mode=disable `
+  --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" `
+  --product-name=DerpiWallpaper `
+  --product-version=$version `
+  --output-filename="DerpiWallpaper.exe" `
+  --output-dir build `
+  --windows-icon-from-ico="data\derpiwallpaper.ico" `
   --include-data-files="data/*=data/"

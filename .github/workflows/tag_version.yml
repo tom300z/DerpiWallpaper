@@ -32,6 +32,20 @@ jobs:
           version: latest
           virtualenvs-create: false
 
+      - name: Configure SSH for pushes
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: |
+            ${{ secrets.COMMIT_KEY }}
+
+      - name: Switch origin to SSH and trust github.com
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          ssh-keyscan github.com >> ~/.ssh/known_hosts 2>/dev/null
+          git remote set-url origin "git@github.com:${GITHUB_REPOSITORY}.git"
+
       - name: Tag current version if missing
         shell: bash
         run: |

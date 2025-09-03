@@ -6,3 +6,4 @@ __pycache__
 *.pyc
 .vagrant
 data/version.txt
+deploy_key*

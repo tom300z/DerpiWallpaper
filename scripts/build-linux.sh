@@ -20,7 +20,7 @@ fi
 
 mkdir -p build
 
-poetry install
+poetry install --with dev
 poetry run nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \
@@ -33,4 +33,3 @@ poetry run nuitka \
   --output-dir=build \
   --linux-icon="data/derpiwallpaper.png" \
   --include-data-files="data/*=data/"
-

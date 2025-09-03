@@ -25,7 +25,7 @@ if ($content -ne $version) {
 
 New-Item -ItemType Directory -Force -Path build | Out-Null
 
-poetry install
+poetry install --with dev
 poetry run nuitka \
   .\derpiwallpaper\__main__.py \
   --msvc=latest \
@@ -39,4 +39,3 @@ poetry run nuitka \
   --output-dir build \
   --windows-icon-from-ico="data\derpiwallpaper.ico" \
   --include-data-files="data/*=data/"
-

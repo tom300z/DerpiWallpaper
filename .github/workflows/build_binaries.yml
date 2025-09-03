@@ -40,6 +40,24 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}--${{ hashFiles('poetry.lock') }}
           path: .venv
 
+      - name: Bind Poetry to runner Python (Linux/macOS)
+        if: matrix.os != 'windows-latest'
+        shell: bash
+        run: |
+          if [ -x .venv/bin/python ]; then
+            echo "Cached venv Python: $(.venv/bin/python --version)"
+          fi
+          echo "Runner Python: $(python --version)"
+          poetry env use "$(command -v python)"
+
+      - name: Bind Poetry to runner Python (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          if (Test-Path .venv\Scripts\python.exe) { & .venv\Scripts\python.exe --version }
+          python --version
+          poetry env use (Get-Command python).Source
+
       - name: Install Dependencies
         run: |
           poetry install --with dev

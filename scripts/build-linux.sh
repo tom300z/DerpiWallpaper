@@ -21,7 +21,7 @@ fi
 mkdir -p build
 
 poetry install --with dev
-poetry run nuitka \
+poetry run python -m nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \
   --enable-plugin=pyside6 \

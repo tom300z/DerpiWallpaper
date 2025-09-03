@@ -33,4 +33,5 @@ python -m nuitka \
   --output-filename="DerpiWallpaper" \
   --output-dir=build \
   --linux-icon="data/derpiwallpaper.png" \
-  --include-data-files="data/*=data/"
+  --include-data-files="data/*=data/" \
+  --assume-yes-for-downloads

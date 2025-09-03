@@ -1,0 +1,52 @@
+name: Tag Version on Default Branch
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    # Only run on the default branch
+    if: github.ref_name == github.event.repository.default_branch
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.x'
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          version: latest
+          virtualenvs-create: false
+
+      - name: Tag current version if missing
+        shell: bash
+        run: |
+          set -euo pipefail
+          VERSION="$(poetry version -s)"
+          echo "Detected version: ${VERSION}"
+
+          git fetch --tags --force
+          if git rev-parse -q --verify "refs/tags/${VERSION}" >/dev/null; then
+            echo "Tag ${VERSION} already exists; nothing to do."
+            exit 0
+          fi
+
+          echo "Creating tag ${VERSION}"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git tag "${VERSION}"
+          git push origin "refs/tags/${VERSION}"

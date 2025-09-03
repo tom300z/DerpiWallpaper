@@ -25,13 +25,23 @@ The app itself is pretty self explanatory. Just put the binary anywhere on your 
 1. Install poetry
 2. run `poetry install`
 
-### Building the Standalone executable:
-#### For windows
+### Building the Standalone executable
+Use the platform build scripts. They write/verify `data/version.txt` from Poetry and then run Nuitka.
+
+#### Windows (PowerShell):
+Requires Visual Studio Build Tools on PATH
 ```powershell
-nuitka .\derpiwallpaper\__main__.py --msvc=latest --onefile --enable-plugin=pyside6 --windows-console-mode=disable --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" --product-name=DerpiWallpaper --product-version=$((poetry version).split()[1]) --output-filename="DerpiWallpaper.exe" --windows-icon-from-ico="data\derpiwallpaper.ico" --include-data-files="data/*=data/"
+./scripts/build-windows.ps1
 ```
-#### For Linux
+
+#### Linux (Bash):
+Requires `python3 python3-dev patchelf gcc ccache`
 ```bash
-sudo apt install python3-dev patchelf gcc
-nuitka ./derpiwallpaper/__main__.py --onefile --enable-plugin=pyside6 --windows-console-mode=disable --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" --product-name=DerpiWallpaper --product-version=$(poetry version -s) --output-filename="DerpiWallpaper" --linux-icon="data/derpiwallpaper.png" --include-data-files="data/*=data/"
+bash ./scripts/build-linux.sh
+```
+
+#### macOS (Bash):
+Requires Xcode Command Line Tools
+```bash
+bash ./scripts/build-macos.sh
 ```

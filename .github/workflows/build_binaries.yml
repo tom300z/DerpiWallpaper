@@ -59,10 +59,11 @@ jobs:
           key: venv-${{ runner.os }}-${{ steps.setup_python.outputs.python-version }}--${{ hashFiles('poetry.lock') }}
           path: .venv
 
-      - name: Get Version from Poetry
-        id: get_version
-        shell: bash
-        run: echo "version=$(poetry version -s)" >> $GITHUB_ENV
+      - name: Install system build deps (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-dev patchelf gcc
 
       - name: show py
         run: |
@@ -71,23 +72,23 @@ jobs:
           echo $PATH
           python --version
 
-      - name: Build Executable with Nuitka
-        uses: Nuitka/Nuitka-Action@main
-        with:
-          nuitka-version: main
-          script-name: derpiwallpaper/__main__.py
-          onefile: true
-          output-dir: build                # Specify output directory
-          output-filename: DerpiWallpaper  # Base name for the output file
-          enable-plugins: pyside6
-          windows-console-mode: disable
-          onefile-tempdir-spec: "{CACHE_DIR}/{PRODUCT}/{VERSION}"
-          product-name: DerpiWallpaper
-          product-version: ${{ env.version }}
-          windows-icon-from-ico: "data/derpiwallpaper.ico"
-          linux-icon: "data/derpiwallpaper.png"
-          macos-app-icon: "data/derpiwallpaper.png"
-          include-data-files: "data/*=data/"
+      - name: Build (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          ./scripts/build-windows.ps1
+
+      - name: Build (Linux)
+        if: matrix.os == 'ubuntu-latest'
+        shell: bash
+        run: |
+          bash ./scripts/build-linux.sh
+
+      - name: Build (macOS)
+        if: matrix.os == 'macos-latest'
+        shell: bash
+        run: |
+          bash ./scripts/build-macos.sh
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4

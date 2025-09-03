@@ -262,6 +262,7 @@ class DerpiWallpaperUI(QWidget):
     def create_update_widget(self):
         update_wallpaper_button = QPushButton("Update wallpaper!")
         update_wallpaper_button.clicked.connect(self.refresh_wp)
+        update_wallpaper_button.setMinimumHeight(update_wallpaper_button.fontMetrics().lineSpacing() * 2 + 8)
         update_progress_bar = QProgressBar()
         update_progress_bar.setMaximum(self.wman.wp_updater.max_steps)
         update_error_label = QLabel("blub")

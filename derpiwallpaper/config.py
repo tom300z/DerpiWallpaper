@@ -4,6 +4,8 @@ from appdirs import user_config_dir
 
 from derpiwallpaper.utils import get_user_images_folder
 
+from derpiwallpaper._version import PACKAGE_VERSION as PACKAGE_VERSION
+
 class DerpiWallpaperConfig:
     # Default configuration settings as class attributes
     derpibooru_json_api_key = ""  # Defaults to public api

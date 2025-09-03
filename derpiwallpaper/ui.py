@@ -6,9 +6,12 @@ from PySide6.QtCore import Qt, QEvent, SignalInstance, Slot, Signal, QUrl
 from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from PySide6.QtWidgets import QGridLayout, QLabel, QLineEdit, QProgressBar, QPushButton, QWidget, QGroupBox, QCheckBox, QSpinBox, QSystemTrayIcon, QMenu, QMainWindow, QApplication, QMessageBox
 from PySide6.QtGui import QDesktopServices, QPixmap, QPainter
+from derpiwallpaper._version import PACKAGE_VERSION
 from derpiwallpaper.autostart import is_run_on_startup, run_on_startup
 from derpiwallpaper.config import CONFIG
 from derpiwallpaper.workers import WorkerManager, wman
+import traceback
+from urllib.parse import quote
 
 ICON_PATH = Path(__file__).parent.parent / "data" / "derpiwallpaper.ico"
 
@@ -21,25 +24,67 @@ class DerpiWallpaperApp(QApplication):
 
     @Slot(Exception)
     def exit_with_error_popup(self, error: Exception):
+        # Build error text and attach as expandable details
+        error_text = f'{error.__class__.__name__}: {str(error)}'
+        try:
+            tb_lines = traceback.TracebackException.from_exception(error).format()
+            error_text_full = ''.join(tb_lines)
+        except Exception:
+            error_text_full = 'No traceback available.'
+
         error_dialog = QMessageBox()
         error_dialog.setWindowIcon(QIcon(str(ICON_PATH)))
         error_dialog.setIcon(QMessageBox.Icon.Critical)
         error_dialog.setWindowTitle("I just dont know what went wrong...")
         #error_dialog.setText(getattr(error, "message", str(error)))
-        error_dialog.setText(str(error))
+        error_dialog.setText(error_text)
         error_dialog.setTextInteractionFlags(Qt.TextInteractionFlag.TextSelectableByMouse)
-        error_dialog.setInformativeText('Please click "Report Issue" to report this issue on Github.')
+        error_dialog.setInformativeText('Click "Show Details" for traceback. Use "Report Issue" to file on GitHub.')
+
+        error_dialog.setDetailedText(error_text_full)
 
         # Add the "Ok" and "Report Issue" buttons
         report_issue_button = error_dialog.addButton("Report Issue", QMessageBox.ButtonRole.ActionRole)
+        copy_button = error_dialog.addButton("Copy Traceback", QMessageBox.ButtonRole.ActionRole)
 
         # Function to open GitHub issue link with prefilled error message
         def open_github_issue():
-            issue_url = f"https://github.com/tom300z/DerpiWallpaper/issues/new?body={QUrl.toPercentEncoding(str(error)).toStdString()}"
-            QDesktopServices.openUrl(issue_url)
+            base = f"https://github.com/tom300z/DerpiWallpaper/issues/new?title={quote(error_text)}&body="
+
+            body_text = f"Version: {PACKAGE_VERSION}"+"\n"+"Error:\n" + error_text_full
+
+            # Limit total URL length to a conservative 2000 chars
+            limit = 2000
+            allowed = max(0, limit - len(base))
+
+            # Truncate body so that percent-encoded length fits into allowed
+            suffix = "\n\n...[truncated]"
+            text = body_text
+            encoded = quote(text)
+            if len(encoded) > allowed:
+                # Rough cut then refine to fit
+                # Start with a proportional guess to reduce iterations
+                approx_ratio = allowed / max(1, len(encoded))
+                cut_len = int(len(text) * approx_ratio)
+                cut_len = max(0, cut_len - len(suffix))
+                text = text[:cut_len] + suffix
+                encoded = quote(text)
+                # If still too long, trim iteratively
+                while len(encoded) > allowed and cut_len > 0:
+                    cut_len = max(0, cut_len - max(16, int(cut_len * 0.1)))
+                    text = body_text[:cut_len] + suffix
+                    encoded = quote(text)
+
+            issue_url = base + encoded
+            QDesktopServices.openUrl(QUrl(issue_url))
 
         # Connect the "Report Issue" button to the GitHub function
         report_issue_button.clicked.connect(open_github_issue)
+
+        # Copy traceback to clipboard
+        def copy_error_to_clipboard():
+            QGuiApplication.clipboard().setText(error_text_full)
+        copy_button.clicked.connect(copy_error_to_clipboard)
 
         error_dialog.setStandardButtons(QMessageBox.StandardButton.Ok)
         error_dialog.exec()

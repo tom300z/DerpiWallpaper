@@ -38,4 +38,6 @@ poetry run python -m nuitka `
   --output-dir=build `
   --windows-icon-from-ico="data\derpiwallpaper.ico" `
   --include-data-files="data/*=data/" `
+  --file-description="DerpiWallpaper is an app that can set your wallpaper to a random Image from derpibooru.org!" `
+  --company-name="tom300z" `
   --assume-yes-for-downloads

@@ -4,7 +4,7 @@ import requests
 import random
 from datetime import datetime, timedelta
 
-from derpiwallpaper.config import CONFIG
+from derpiwallpaper.config import get_conf
 from derpiwallpaper.utils import DerpibooruApiError, check_response, get_user_images_folder
 from derpiwallpaper.utils.set_wallpaper import set_wallpaper
 from derpiwallpaper.workers import WorkerThread, wman
@@ -15,10 +15,11 @@ class WallpaperUpdaterWorker(WorkerThread):
     max_steps = 4
     temporary_error: str | None = None
 
-    _images_url: str = CONFIG.derpibooru_json_api_url + "search/images"
+    _images_url: str
     _next_refresh_time: datetime | None = None
 
     def __init__(self):
+        self._images_url = get_conf().derpibooru_json_api_url + "search/images"
         super().__init__()
 
     def set_progress(self, progress: int):
@@ -27,9 +28,9 @@ class WallpaperUpdaterWorker(WorkerThread):
 
     def on_tick(self) -> None:
         # Schedule refresh if auto-refresh is enabled and no refresh is scheduled in the configured interval
-        if CONFIG.enable_auto_refresh == True:
-            if not self._next_refresh_time or (self._next_refresh_time - datetime.now()).total_seconds() > CONFIG.auto_refresh_interval_seconds:
-                self.schedule_refresh(datetime.now() + timedelta(seconds=CONFIG.auto_refresh_interval_seconds))
+        if get_conf().enable_auto_refresh == True:
+            if not self._next_refresh_time or (self._next_refresh_time - datetime.now()).total_seconds() > get_conf().auto_refresh_interval_seconds:
+                self.schedule_refresh(datetime.now() + timedelta(seconds=get_conf().auto_refresh_interval_seconds))
 
         if self._next_refresh_time and datetime.now() >= self._next_refresh_time:
             self._refresh_wallpaper()
@@ -59,8 +60,8 @@ class WallpaperUpdaterWorker(WorkerThread):
 
             # Set API parameters
             params = {
-                "key": CONFIG.derpibooru_json_api_key,  # If you have an API key, insert it here; otherwise, it will use the public anon key
-                "q": CONFIG.search_string,
+                "key": get_conf().derpibooru_json_api_key,  # If you have an API key, insert it here; otherwise, it will use the public anon key
+                "q": get_conf().search_string,
                 "per_page": 1,  # Maximum number of results to fetch (max allowed by the API for anon keys is 50)
                 "page": random.randint(1, max(1, wman().search.current_page_count))
             }
@@ -85,7 +86,7 @@ class WallpaperUpdaterWorker(WorkerThread):
                 image_url = random_image['view_url']
 
                 # Download the image
-                image_path = CONFIG.wallpaper_folder / f"derpibooru_{random_image['id']}.png"
+                image_path = get_conf().wallpaper_folder / f"derpibooru_{random_image['id']}.png"
                 with open(image_path, 'wb') as file:
                     file.write(requests.get(image_url).content)
                     self.set_progress(3)
@@ -95,14 +96,14 @@ class WallpaperUpdaterWorker(WorkerThread):
                 set_wallpaper(image_path)
 
                 self.temporary_error = None
-                print(f"Wallpaper set successfully to a random image matching '{CONFIG.search_string}' from page {params["page"]}/{wman().search.current_page_count}. Runtime: {round((datetime.now()-START_TIME).total_seconds(),1)}s")
+                print(f"Wallpaper set successfully to a random image matching '{get_conf().search_string}' from page {params["page"]}/{wman().search.current_page_count}. Runtime: {round((datetime.now()-START_TIME).total_seconds(),1)}s")
         except DerpibooruApiError as e:
             self.temporary_error = f'Derpibooru API Error: {e.error}'
         except requests.ConnectionError as e:
             self.temporary_error = f"Unable to connect to {urlsplit(self._images_url).netloc}."
         finally:
             self.set_progress(4)
-            if CONFIG.enable_auto_refresh:
-                self.schedule_refresh(datetime.now() + timedelta(seconds=CONFIG.auto_refresh_interval_seconds))
+            if get_conf().enable_auto_refresh:
+                self.schedule_refresh(datetime.now() + timedelta(seconds=get_conf().auto_refresh_interval_seconds))
             else:
                 self.schedule_refresh(None)

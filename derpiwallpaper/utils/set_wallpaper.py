@@ -5,7 +5,7 @@ import re
 import subprocess
 from pathlib import Path
 
-from derpiwallpaper.config import CONFIG
+from derpiwallpaper.config import get_conf
 from derpiwallpaper.utils import find_executables
 
 class WallpaperSetError(RuntimeError):
@@ -124,4 +124,4 @@ def set_wallpaper(image_path: str | Path):
     else:
         raise WallpaperSetError("Unsupported operating system for setting wallpaper.")
 
-    CONFIG.current_wallpaper_path = str(image_path)
+    get_conf().current_wallpaper_path = str(image_path)

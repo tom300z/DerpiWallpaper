@@ -9,21 +9,25 @@ import os
 from datetime import datetime, timedelta
 from PySide6.QtCore import QObject, QThread, Signal, SignalInstance
 
-from derpiwallpaper.config import CONFIG
+from derpiwallpaper.config import get_conf
 from derpiwallpaper.utils import DerpibooruApiError, check_response, wait_until
 from derpiwallpaper.workers import WorkerThread
 
 class SearchWorker(WorkerThread):
 
-    _images_url: str = CONFIG.derpibooru_json_api_url + "search/images"
+    _images_url: str
     _current_search_string: str | None = None
     current_result_count: int = 0
     current_page_count: int = 0
     temporary_error: str | None = None
     _last_request_time: datetime | None = None
 
+    def __init__(self) -> None:
+        self._images_url = get_conf().derpibooru_json_api_url + "search/images"
+        super().__init__()
+
     def on_tick(self) -> None:
-        if CONFIG.search_string != self._current_search_string or self.temporary_error:
+        if get_conf().search_string != self._current_search_string or self.temporary_error:
             self._refresh_results()
 
     def _refresh_results(self) -> None:
@@ -34,8 +38,8 @@ class SearchWorker(WorkerThread):
         try:
             # Set API parameters
             params = {
-                "key": CONFIG.derpibooru_json_api_key,  # If you have an API key, insert it here; otherwise, it will use the public anon key
-                "q": CONFIG.search_string,
+                "key": get_conf().derpibooru_json_api_key,  # If you have an API key, insert it here; otherwise, it will use the public anon key
+                "q": get_conf().search_string,
                 "per_page": 1  # Maximum number of results to fetch (max allowed by the API for anon keys is 50)
             }
 

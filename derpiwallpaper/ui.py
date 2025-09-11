@@ -8,7 +8,7 @@ from PySide6.QtWidgets import QGridLayout, QLabel, QLineEdit, QProgressBar, QPus
 from PySide6.QtGui import QDesktopServices, QPixmap, QPainter
 
 from derpiwallpaper.autostart import is_run_on_startup, run_on_startup
-from derpiwallpaper.config import CONFIG, DATA_PATH, PACKAGE_VERSION
+from derpiwallpaper.config import get_conf, DATA_PATH, PACKAGE_VERSION
 from derpiwallpaper.workers import WorkerManager, wman
 import traceback
 from urllib.parse import quote
@@ -96,7 +96,7 @@ class DerpiWallpaperApp(QApplication):
         widget = DerpiWallpaperUI()
 
         if self.start_minimized:
-            if not CONFIG.minimize_to_tray:
+            if not get_conf().minimize_to_tray:
                 widget.showMinimized()
         else:
             widget.show()
@@ -127,7 +127,7 @@ class DerpiWallpaperUI(QWidget):
         self.resize(600, 200)
         self.setWindowTitle("DerpiWallpaper")
         self.setWindowIcon(QIcon(str(ICON_PATH)))
-        self.configure_minimize_to_tray(CONFIG.minimize_to_tray)
+        self.configure_minimize_to_tray(get_conf().minimize_to_tray)
 
     def configure_minimize_to_tray(self, enabled: bool):
         if enabled:
@@ -184,10 +184,10 @@ class DerpiWallpaperUI(QWidget):
         # Search string
         search_label = QLabel("Search string:")
 
-        search_input = QLineEdit(CONFIG.search_string)
+        search_input = QLineEdit(get_conf().search_string)
         search_input.setPlaceholderText("Enter derpibooru.org search string...")
         search_input.setToolTip("derpibooru.org search string")
-        search_input.textChanged.connect(lambda search_string: setattr(CONFIG, "search_string", search_string))
+        search_input.textChanged.connect(lambda search_string: setattr(get_conf(), "search_string", search_string))
 
         search_results = QLabel("Searching for images...")
         search_description = QLabel("See <a href=\"https://derpibooru.org/pages/search_syntax\">Search Syntax</a> for instructions on how to build your search string.")
@@ -224,16 +224,16 @@ class DerpiWallpaperUI(QWidget):
         autostart_checkbox.toggled.connect(toggle_auto_start)
 
         minimize_to_tray_checkbox = QCheckBox("Minimize to tray")
-        minimize_to_tray_checkbox.setChecked(CONFIG.minimize_to_tray)
+        minimize_to_tray_checkbox.setChecked(get_conf().minimize_to_tray)
         def toggle_minimize_to_tray(enabled: bool):
-            CONFIG.minimize_to_tray = enabled
-            self.configure_minimize_to_tray(CONFIG.minimize_to_tray)
+            get_conf().minimize_to_tray = enabled
+            self.configure_minimize_to_tray(get_conf().minimize_to_tray)
         minimize_to_tray_checkbox.toggled.connect(toggle_minimize_to_tray)
 
         auto_refresh_checkbox = QCheckBox("Auto refresh wallpaper")
-        auto_refresh_checkbox.setChecked(CONFIG.enable_auto_refresh)
+        auto_refresh_checkbox.setChecked(get_conf().enable_auto_refresh)
         def toggle_auto_refresh(enabled: bool):
-            CONFIG.enable_auto_refresh = enabled
+            get_conf().enable_auto_refresh = enabled
             self.wman.wp_updater.clear_refresh()
         auto_refresh_checkbox.toggled.connect(toggle_auto_refresh)
 
@@ -241,10 +241,10 @@ class DerpiWallpaperUI(QWidget):
         auto_refresh_interval = QSpinBox()
         auto_refresh_interval.setMinimum(1)
         auto_refresh_interval.setMaximum(600)
-        auto_refresh_interval.setValue(int(CONFIG.auto_refresh_interval_seconds/60))
+        auto_refresh_interval.setValue(int(get_conf().auto_refresh_interval_seconds/60))
         auto_refresh_interval.setSuffix(" min")
         def set_auto_refresh_interval(interval_mins: int):
-            CONFIG.auto_refresh_interval_seconds = interval_mins*60
+            get_conf().auto_refresh_interval_seconds = interval_mins*60
         auto_refresh_interval.valueChanged.connect(set_auto_refresh_interval)
         auto_refresh_checkbox.toggled.connect(toggle_auto_refresh)
 
@@ -266,9 +266,9 @@ class DerpiWallpaperUI(QWidget):
         wallpapers_to_keep = QSpinBox()
         wallpapers_to_keep.setMinimum(1)
         wallpapers_to_keep.setMaximum(999999)
-        wallpapers_to_keep.setValue(CONFIG.wallpapers_to_keep)
+        wallpapers_to_keep.setValue(get_conf().wallpapers_to_keep)
         def set_wallpapers_to_keep(number: int):
-            CONFIG.wallpapers_to_keep = number
+            get_conf().wallpapers_to_keep = number
             self.wman.cleanup.schedule_cleanup()
         wallpapers_to_keep.valueChanged.connect(set_wallpapers_to_keep)
 
@@ -278,14 +278,14 @@ class DerpiWallpaperUI(QWidget):
         current_wallpaper_image.setAlignment(Qt.AlignmentFlag.AlignCenter)
         def update_current_wallpaper():
             hidpi_factor = QGuiApplication.primaryScreen().devicePixelRatio()
-            pixmap = QPixmap(CONFIG.current_wallpaper_path).scaled(int(160*hidpi_factor), int(90*hidpi_factor), Qt.AspectRatioMode.KeepAspectRatio)
+            pixmap = QPixmap(get_conf().current_wallpaper_path).scaled(int(160*hidpi_factor), int(90*hidpi_factor), Qt.AspectRatioMode.KeepAspectRatio)
             pixmap.setDevicePixelRatio(hidpi_factor)
             current_wallpaper_image.setPixmap(pixmap)
         update_current_wallpaper()
         self.wman.wp_updater.update_ui.connect(update_current_wallpaper)
 
         open_wallpaper_folder_button = QPushButton("Open wallpaper folder")
-        open_wallpaper_folder_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(CONFIG.wallpaper_folder))))
+        open_wallpaper_folder_button.clicked.connect(lambda: QDesktopServices.openUrl(QUrl.fromLocalFile(str(get_conf().wallpaper_folder))))
 
         # Layout
         widget = QGroupBox("Recent Wallpapers")

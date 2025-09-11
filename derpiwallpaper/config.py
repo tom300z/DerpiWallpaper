@@ -88,9 +88,20 @@ class DerpiWallpaperConfig:
         with open(self.config_path, "w") as configfile:
             self.config.write(configfile)
 
-# Create config instance
-CONFIG = DerpiWallpaperConfig()
-CLEANUP_INTERVAL = 60  # Intentionally hardcoded to avoid accidental cleanup
 
-# Create wallpaper folder
-CONFIG.wallpaper_folder.mkdir(parents=True, exist_ok = True)
+_CONFIG: None | DerpiWallpaperConfig = None
+def get_conf():
+    """Returns the global config instance and makes sure it's initialized."""
+
+    global _CONFIG
+    if not _CONFIG:
+        # Load config on demand
+        _CONFIG = DerpiWallpaperConfig()
+
+        # Create wallpaper folder
+        _CONFIG.wallpaper_folder.mkdir(parents=True, exist_ok = True)
+
+
+    return _CONFIG
+
+CLEANUP_INTERVAL = 60  # Intentionally hardcoded to avoid accidental cleanup

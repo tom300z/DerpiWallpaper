@@ -31,5 +31,5 @@ class WallpaperCleanupWorker(WorkerThread):
             files_to_delete = files[:-get_conf().wallpapers_to_keep]  # All but the most recent ones
 
             for file in files_to_delete:
-                file.unlink()  # Delete file
+                file.unlink(missing_ok=True)  # Delete file
             print(f'Cleaned up {len(files_to_delete)} old wallpapers.')

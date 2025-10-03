@@ -45,3 +45,11 @@ Requires Xcode Command Line Tools
 ```bash
 bash ./scripts/build-macos.sh
 ```
+
+### Vagrant VMs (optional)
+For quick cross-OS testing in VMs using VirtualBox:
+
+- Ubuntu Desktop: `cd vagrant/ubuntu; vagrant up`
+- Windows 11: `cd vagrant/windows; vagrant up`
+
+Both VMs sync the repo into the guest (`/mnt/derpiwallpaper` on Ubuntu, `C:\derpiwallpaper` on Windows).

@@ -1,22 +1,13 @@
 # -*- mode: ruby -*-
-# vi: set ft=ruby :
 
-# Windows development VM for DerpiWallpaper
 Vagrant.configure("2") do |config|
   # Use a prebuilt Windows 11 box (VirtualBox provider supported)
-  # Other options include: gusztavvargadr/windows-10 or windows-2022 for Server
   config.vm.box = "gusztavvargadr/windows-11"
 
-  # Explicitly mark guest type and communicator
-  config.vm.guest = :windows
-  config.vm.communicator = "winrm"
-
-  # Increase boot timeout; Windows boots can take longer
-  config.vm.boot_timeout = 900
 
   # Sync the repository into the guest
   # On Windows guests, using VirtualBox shared folders avoids SMB credential prompts
-  config.vm.synced_folder "../../", "C:/derpiwallpaper", type: "virtualbox"
+  config.vm.synced_folder "../../", "C:/derpiwallpaper"
 
   # Optional: forward RDP for convenience (GUI is usually shown by provider as well)
   # config.vm.network "forwarded_port", guest: 3389, host: 53389, auto_correct: true
@@ -28,10 +19,5 @@ Vagrant.configure("2") do |config|
     vb.memory = "4096"
     vb.cpus = 2
   end
-
-  # Example PowerShell provisioning (disabled by default)
-  # config.vm.provision "shell", inline: <<-POWERSHELL
-  #   Write-Output "Windows VM ready for DerpiWallpaper"
-  # POWERSHELL
 end
 

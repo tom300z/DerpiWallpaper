@@ -21,6 +21,8 @@ class DerpiWallpaperConfig:
     enable_auto_refresh: bool = False
     minimize_to_tray: bool = True
     auto_refresh_interval_seconds: int = 360
+    run_refresh_on_login: bool = False
+    enable_refresh_on_login: bool = False
     current_wallpaper_path: str = ""
     wallpapers_to_keep: int = 100
     wallpaper_folder: Path = get_user_images_folder() / "DerpiWallpaper"

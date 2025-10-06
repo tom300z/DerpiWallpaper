@@ -7,7 +7,7 @@ from PySide6.QtGui import QIcon, QAction, QGuiApplication
 from PySide6.QtWidgets import QGridLayout, QLabel, QLineEdit, QProgressBar, QPushButton, QWidget, QGroupBox, QCheckBox, QSpinBox, QSystemTrayIcon, QMenu, QMainWindow, QApplication, QMessageBox
 from PySide6.QtGui import QDesktopServices, QPixmap, QPainter
 
-from derpiwallpaper.autostart import is_run_on_startup, run_on_startup
+from derpiwallpaper.autostart import is_run_on_startup, configure_run_on_startup
 from derpiwallpaper.config import get_conf, DATA_PATH, PACKAGE_VERSION
 from derpiwallpaper.workers import WorkerManager, wman
 import traceback
@@ -17,10 +17,12 @@ ICON_PATH = DATA_PATH / "derpiwallpaper.ico"
 
 class DerpiWallpaperApp(QApplication):
     start_minimized: bool
+    refresh_on_start: bool
 
-    def __init__(self, start_minimized = False) -> None:
+    def __init__(self, start_minimized = False, refresh_on_start=False) -> None:
         super().__init__()
         self.start_minimized = start_minimized
+        self.refresh_on_start = refresh_on_start
 
     @Slot(Exception)
     def exit_with_error_popup(self, error: Exception):
@@ -100,6 +102,9 @@ class DerpiWallpaperApp(QApplication):
                 widget.showMinimized()
         else:
             widget.show()
+
+        if self.refresh_on_start:
+            widget.refresh_wp()
 
         return super().exec()
 
@@ -216,11 +221,17 @@ class DerpiWallpaperUI(QWidget):
         return widget
 
     def create_program_options_widget(self):
-        autostart_checkbox = QCheckBox("Run on boot (minimized)")
+        autostart_checkbox = QCheckBox("Run on login (minimized)")
         autostart_checkbox.setChecked(is_run_on_startup())
-        if autostart_checkbox.isChecked(): run_on_startup(True)  # Update the autostart entry to the current binary
         def toggle_auto_start(enabled: bool):
-            run_on_startup(enabled)
+            configure_run_on_startup(
+                enable=enabled,
+                flags={
+                    "--minimized",
+                    *({"--refresh-on-start"} if get_conf().enable_refresh_on_login else set())
+                }
+            )  # Update the autostart entry to the current binary
+        if autostart_checkbox.isChecked(): toggle_auto_start(True)
         autostart_checkbox.toggled.connect(toggle_auto_start)
 
         minimize_to_tray_checkbox = QCheckBox("Minimize to tray")
@@ -248,14 +259,22 @@ class DerpiWallpaperUI(QWidget):
         auto_refresh_interval.valueChanged.connect(set_auto_refresh_interval)
         auto_refresh_checkbox.toggled.connect(toggle_auto_refresh)
 
+        refresh_on_login_checkbox = QCheckBox("Refresh wallpaper on login")
+        refresh_on_login_checkbox.setChecked(get_conf().enable_refresh_on_login)
+        def toggle_refresh_on_login(enabled: bool):
+            get_conf().enable_refresh_on_login = enabled
+            toggle_auto_start(enabled=is_run_on_startup())
+        refresh_on_login_checkbox.toggled.connect(toggle_refresh_on_login)
+
         # Layout
         widget = QGroupBox("Program")
         layout = QGridLayout(widget)
-        layout.addWidget(autostart_checkbox,          0, 0, 1, 2)
-        layout.addWidget(minimize_to_tray_checkbox,          0, 2, 1, 2)
-        layout.addWidget(auto_refresh_checkbox,       1, 0, 1, 2)
-        layout.addWidget(auto_refresh_interval_label, 1, 2)
-        layout.addWidget(auto_refresh_interval,       1, 3)
+        layout.addWidget(autostart_checkbox,                 0, 0, 1, 2)
+        layout.addWidget(refresh_on_login_checkbox,          0, 2, 1, 2)
+        layout.addWidget(auto_refresh_checkbox,              1, 0, 1, 2)
+        layout.addWidget(auto_refresh_interval_label,        1, 2)
+        layout.addWidget(auto_refresh_interval,              1, 3)
+        layout.addWidget(minimize_to_tray_checkbox,          2, 0, 1, 2)
         layout.setColumnStretch(0, 1)
         layout.setColumnStretch(3, 1)
 

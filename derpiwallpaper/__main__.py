@@ -14,7 +14,10 @@ if __name__ == "__main__":
             callback()
 
     # Initialize the Qt app
-    app = DerpiWallpaperApp(start_minimized="--minimized" in sys.argv)
+    app = DerpiWallpaperApp(
+        start_minimized="--minimized" in sys.argv,
+        refresh_on_start="--refresh-on-start" in sys.argv
+    )
     app.aboutToQuit.connect(prepare_exit)
 
     try:

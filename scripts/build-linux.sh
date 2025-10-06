@@ -26,7 +26,7 @@ poetry run nuitka \
   --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" \
   --product-name=DerpiWallpaper \
   --product-version="$version" \
-  --output-filename="DerpiWallpaper" \
+  --output-filename="DerpiWallpaper-linux" \
   --output-dir=build \
   --linux-icon="data/derpiwallpaper.png" \
   --include-data-files="data/*=data/" \

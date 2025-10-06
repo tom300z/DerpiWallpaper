@@ -33,7 +33,7 @@ poetry run nuitka `
   --onefile-tempdir-spec="{CACHE_DIR}/{PRODUCT}/{VERSION}" `
   --product-name=DerpiWallpaper `
   --product-version=$version `
-  --output-filename="DerpiWallpaper.exe" `
+  --output-filename="DerpiWallpaper-win.exe" `
   --output-dir=build `
   --windows-icon-from-ico="data\derpiwallpaper.ico" `
   --include-data-files="data/*=data/" `

@@ -18,9 +18,7 @@ if ! grep -Fxq "$version" data/version.txt; then
   exit 1
 fi
 
-which python
-
-nuitka \
+poetry run nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \
   --enable-plugin=pyside6 \

@@ -12,17 +12,12 @@ jobs:
     runs-on: ${{ matrix.os }}
 
     steps:
+
       - name: Check-out repository
         uses: actions/checkout@v5
 
       - name: Install poetry
-        #run: pipx install poetry
-        run: |
-          pipx install poetry
-          which python
-          which poetry
-          which python
-          python --version
+        run: pipx install poetry
 
       - name: Setup Python
         id: setup_python
@@ -32,19 +27,6 @@ jobs:
           cache: 'poetry'
 
       - run: poetry install
-
-      # - name: Install system build deps (Linux)
-      #   if: matrix.os == 'ubuntu-latest'
-      #   run: |
-      #     sudo apt-get update
-      #     sudo apt-get install -y python3-dev patchelf gcc
-
-      - name: show py
-        run: |
-          which python
-          which poetry
-          echo $PATH
-          python --version
 
       - name: Build (Windows)
         if: matrix.os == 'windows-latest'

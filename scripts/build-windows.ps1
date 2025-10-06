@@ -23,9 +23,8 @@ if ($content -ne $version) {
   throw "data/version.txt content does not match $version"
 }
 
-New-Item -ItemType Directory -Force -Path build | Out-Null
-poetry install
-poetry run python -m nuitka `
+
+poetry run nuitka `
   .\derpiwallpaper\__main__.py `
   --msvc=latest `
   --onefile `

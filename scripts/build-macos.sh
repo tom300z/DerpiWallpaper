@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -xeuo pipefail
 
 # Build DerpiWallpaper for macOS using Nuitka
 
@@ -18,11 +18,7 @@ if ! grep -Fxq "$version" data/version.txt; then
   exit 1
 fi
 
-mkdir -p build
-deactivate || true
-poetry install
-source .venv/bin/activate
-python -m nuitka \
+poetry run nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \
   --enable-plugin=pyside6 \

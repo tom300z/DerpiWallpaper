@@ -13,17 +13,25 @@ jobs:
 
     steps:
       - name: Check-out repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+
+      - name: Install poetry
+        #run: pipx install poetry
+        run: |
+          pipx install poetry
+          which python
+          which poetry
+          which python
+          python --version
 
       - name: Setup Python
         id: setup_python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.13'
-          architecture: 'x64' # optional x64 or x86. Defaults to x64 if not specified
-          cache: 'pip'
-          cache-dependency-path: |
-            **/requirements*.txt
+          cache: 'poetry'
+
+      - run: poetry install
 
       - name: Install poetry
         run: |
@@ -109,3 +117,6 @@ jobs:
             build/DerpiWallpaper.bin
             build/DerpiWallpaper
           include-hidden-files: true
+
+permissions:
+  contents: write

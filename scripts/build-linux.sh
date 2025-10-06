@@ -18,11 +18,9 @@ if ! grep -Fxq "$version" data/version.txt; then
   exit 1
 fi
 
-mkdir -p build
-deactivate || true
-poetry install
-source .venv/bin/activate
-python -m nuitka \
+which python
+
+nuitka \
   ./derpiwallpaper/__main__.py \
   --onefile \
   --enable-plugin=pyside6 \

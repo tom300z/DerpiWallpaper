@@ -33,44 +33,11 @@ jobs:
 
       - run: poetry install
 
-      # # Use in-project venv but don't cache it to avoid mismatch/broken issues
-      # - name: Bind Poetry to runner Python (Linux/macOS)
-      #   if: matrix.os != 'windows-latest'
-      #   shell: bash
+      # - name: Install system build deps (Linux)
+      #   if: matrix.os == 'ubuntu-latest'
       #   run: |
-      #     if [ -x .venv/bin/python ]; then
-      #       echo "Cached venv Python: $(.venv/bin/python --version)"
-      #     fi
-      #     echo "Runner Python: $(python --version)"
-      #     poetry env use "$(command -v python)"
-
-      # - name: Bind Poetry to runner Python (Windows)
-      #   if: matrix.os == 'windows-latest'
-      #   shell: pwsh
-      #   run: |
-      #     if (Test-Path .venv\Scripts\python.exe) { & .venv\Scripts\python.exe --version }
-      #     python --version
-      #     poetry env use (Get-Command python).Source
-
-      - name: Install Dependencies
-        run: |
-          poetry install --with dev
-          echo "VIRTUAL_ENV=$VIRTUAL_ENV" >> $GITHUB_ENV
-
-      # - name: Activate venv on Windows
-      #   if: matrix.os == 'windows-latest'
-      #   run: |
-      #     echo ".venv\Scripts" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
-      # - name: Activate venv on Linux/macOS
-      #   if: matrix.os != 'windows-latest'
-      #   run: echo ".venv/bin" >> $GITHUB_PATH
-
-
-      - name: Install system build deps (Linux)
-        if: matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-dev patchelf gcc
+      #     sudo apt-get update
+      #     sudo apt-get install -y python3-dev patchelf gcc
 
       - name: show py
         run: |
